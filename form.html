@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+	<title>Maor Bernstein</title>
+	<meta charset = "utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+<body>
+	<div class = "container">
+		<div class = "template" id="contact">
+			<div class = "jumbotron">
+				<h1>Senior Design Eval Form</h1>
+			</div>
+			<div class="col-md-3">
+				<img src = "public/scu_icon.jpg" class="img-responsive img-circle">
+			</div>
+			<div class="col-md-6">
+				<form name="contactform" role="form">
+					<div class="form-group">
+						<label for="name">Name (first and last):</label>
+						<input type = "text" class="form-control" name="name" required>
+					</div>
+					<div class = "form-group">
+						<label for="email">Email:</label>
+						<input type = "email" class = "form-control" name="email" required>
+					</div>
+					<div class = "form-group">
+						<label for="msg">Message:</label>
+						<textarea class="form-control" rows="5" name="msg" required></textarea>
+					</div>
+					<input type="submit" value="Submit" id="submit">
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
