@@ -1,0 +1,182 @@
+html, body {
+    height: 100%;
+}
+
+body,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td {
+    margin: 0;
+    padding: 0;
+    font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, sans-serif;
+}
+
+body {
+    position: relative;
+}
+
+.overlay{
+    opacity:1.0;
+    background-color:#3ca4ff;
+    position:fixed;
+    width:100%;
+    height:100%;
+    top:0px;
+    left:0px;
+    z-index:1000;
+}
+
+.table-view {
+    position: absolute;
+    cursor: default;
+}
+
+.lt-view {
+    position: relative;
+    cursor: default;
+}
+
+.not-selectable {
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+}
+
+.center-container {
+    display: table;
+    margin: 0 auto;
+}
+
+.left-column {
+    height: 100%;
+}
+
+.table-navi {
+    background-color: #F5F5F5;
+    position: absolute;
+    border-bottom: 1px solid #DBDBDB;
+}
+
+.table-navi-subtitle {
+    display: table;
+    margin: 0 auto;
+    color: #BBBBBB;
+    font-size: small;
+    font-weight: 200;
+}
+
+.table-bottom {
+    background-color: #F5F5F5;
+    position: absolute;
+    border-top: 1px solid #DBDBDB;
+}
+
+.table-cell {
+    position: relative;
+    border-bottom: 1px solid #DBDBDB;
+    padding: 8px 8px;
+}
+
+.table-cell-title {
+    font-size: medium;
+    font-weight: 600;
+}
+
+.table-cell-subtitle {
+    font-size: small;
+    font-weight: 200;
+    color: #848484;
+}
+
+.table-cell-desc {
+    padding-top: 8px;
+    font-size: medium;
+    font-weight: 200;
+}
+
+.table-cell-time {
+    position: absolute;
+    float: right;
+    font-size: medium;
+    font-weight: 600;
+}
+
+.separator {
+    background-color: #DBDBDB;
+    position: absolute;
+}
+
+.judge-name-label {
+    position: absolute;
+}
+
+.judge-subtitle-label {
+    position: absolute;
+    color: #999999;
+    font-size: small;
+}
+
+.info-title {
+    position: relative;
+    color: white;
+    font-size: large;
+}
+
+.info-members {
+    position: relative;
+    color: #dcdcdc;
+    font-size: small;
+    font-weight: 200;
+}
+
+.info-desc {
+    position: relative;
+    color: white;
+}
+
+.radio input {
+    margin-right: 4px;
+}
+
+.radio label {
+    margin-right: 15px;
+}
+
+.checkbox input {
+    margin-right: 4px;
+}
+
+.checkbox label {
+    margin-right: 15px;
+}
+
+.judge-signin-input {
+    border: none;
+    overflow: auto;
+    outline: none;
+    resize: none;
+    text-align: center;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+
+.comment-textarea {
+    border: none;
+    overflow: auto;
+    outline: none;
+    resize: none;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    
+    margin-top: 4px;
+    width: 100%;
+    height: 160px;
+}
+
+#root-nav {
+    background-color: white;
+    position: absolute;
+}

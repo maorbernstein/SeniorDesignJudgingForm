@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Evaluation</title>
+<link rel="stylesheet" href="styles-summary.css">
+<style>
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
+    td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+    
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+</head>
+
+<body>
+    <h1>Summary Report</h1>
+</body>
+
+<script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+
+<script src="./js.cookie.js"></script>
+<script src="./core-admin.js"></script>
+<script>
+    $(document).ready(function() {
+        var comm = new Core();
+        comm.initialize();
+        comm.summaryReport();
+    });
+</script>
+</html>
