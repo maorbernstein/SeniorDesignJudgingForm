@@ -8,10 +8,13 @@ const string VALID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 #define NUM_VALID_CHARS VALID_CHARS.length()
 
+#define SHORT_LENGTH 6
+#define LONG_LENGTH 12
+
 class Generator {
 public:
   Generator();
-  string getId();
+  string getId(unsigned int);
 };
 
 Generator generator;
@@ -22,9 +25,9 @@ Generator::Generator() {
   srand(currTime.tv_sec*1000000 + currTime.tv_usec);
 }
 
-string Generator::getId(){
+string Generator::getId(unsigned int length){
   string id;
-  for(int i = 0; i < 6; i++){
+  for(unsigned int i = 0; i < length; i++){
     int index = rand() % NUM_VALID_CHARS;
     id += VALID_CHARS[index];
   }
@@ -32,5 +35,9 @@ string Generator::getId(){
 }
 
 string generateRandomID() {
-  return generator.getId();
+  return generator.getId(SHORT_LENGTH);
+}
+
+string generateLongRandomID() {
+  return generator.getId(LONG_LENGTH);
 }

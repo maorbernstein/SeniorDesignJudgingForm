@@ -35,7 +35,7 @@ int main(){
     }
     Value project_json = project->json(out);
     Value roomid_json(project->getRoomId().c_str(), out.GetAllocator());
-    project_json.AddMember("room", roomid_json, out.GetAllocator());
+    project_json.AddMember("room_id", roomid_json, out.GetAllocator());
     Value evaluations_json(kArrayType);
     vector<Judge> project_judges = judges.find(room);
     for(vector<Judge>::iterator judge = project_judges.begin(); judge != project_judges.end(); judge++){
