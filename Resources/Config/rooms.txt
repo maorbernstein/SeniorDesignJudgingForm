@@ -1,0 +1,4 @@
+Engineering Computing Center 330,ECC330,VFRJLT
+Kenna Hall 100,Kenna100,6IIQBA
+Bannan Engineering 326,Bannan326,BE4ND8
+Bannan Engineering 103,Bannan103,3MJ2TF
