@@ -1,6 +1,7 @@
 #include "utils.hpp"
 #include <string>
 #include <cstdlib>
+#include <sstream>
 #include <sys/time.h>
 using namespace std;
 
@@ -40,4 +41,17 @@ string generateRandomID() {
 
 string generateLongRandomID() {
   return generator.getId(LONG_LENGTH);
+}
+
+bool sendEmail(const string& destination, const string& subject, const string& message) {
+  stringstream ss;
+  FILE *mailpipe = popen("/usr/lib/sendmail -t", "w");
+  if (mailpipe == NULL) {
+    return false;
+  }
+  ss << "To: " << destination << endl << "Subject: " << subject << endl << endl;
+  ss << message << "." << endl;
+  fwrite(ss.str().c_str(), sizeof(char), ss.str().length(), mailpipe);
+  pclose(mailpipe);
+  return true;
 }

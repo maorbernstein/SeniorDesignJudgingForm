@@ -12,15 +12,14 @@ int main(){
   Admin admin;
   in.Parse(getPostedString().c_str());
   out.Parse("{}");
-  string username = in["username"].GetString();
-  string password = in["password"].GetString();
-  string token;
-  if(admin.checkCredentials(username, password, token)){
+  string new_password = in["password"].GetString();
+  string reset_token = in["reset_token"].GetString();
+  if(admin.resetPassword(reset_token, new_password)){
     out.AddMember("status", 0, out.GetAllocator());
     out.AddMember("error", "none", out.GetAllocator());
-    out.AddMember("token", StringRef(token.c_str()), out.GetAllocator());
   } else {
-    throwInvalidAuth();
+    out.AddMember("status", -1, out.GetAllocator());
+    out.AddMember("error", "Invalid reset token.", out.GetAllocator());
   }
   sendResponse(out);
 }
