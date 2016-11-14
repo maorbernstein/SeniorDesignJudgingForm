@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Evaluation</title>
+<link rel="stylesheet" href="styles.css?5">
+</head>
+
+<body style="overflow: hidden;">
+    <div id="root-nav" class="left-column" style="left: 0px; width: 230px; top: 0px; bottom: 0px;">
+        <div class="sidebar table-view">
+            <div id="sidebar-overview" class="table-cell">
+                <label>Overview</label>
+            </div>
+            <div class="sidebar-separator"></div>
+            <div id="sidebar-projects" class="table-cell">
+                <label>Projects</label>
+            </div>
+            <div class="sidebar-separator"></div>
+            <div id="sidebar-rooms" class="table-cell">
+                <label>Rooms</label>
+            </div>
+            <div class="sidebar-separator"></div>
+            <div id="sidebar-judges" class="table-cell">
+                <label>Judges</label>
+            </div>
+        </div>
+        <div id="sign-out" class="signOutBtn" style="bottom: 20px; left: 20px;">
+            Sign Out
+        </div>
+    </div>
+    <div id="primary-content">
+    </div>
+</body>
+
+<script
+  src="https://code.jquery.com/jquery-1.12.4.min.js"
+  integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+  crossorigin="anonymous"></script>
+
+<script src="./js.cookie.js"></script>
+<script src="./core-admin.js?2"></script>
+<script>
+    $(document).ready(function() {
+        var comm = new Core();
+        comm.initialize();
+        
+        $('#sign-out').click(function(){
+            comm.signOut();
+        });
+        
+        $('#sign-in-btn').click(function(){
+            var username = $('#username').val();
+            var password = $('#password').val();
+            
+            if (!username) {
+                alert('username needed.');
+                return;
+            }
+            
+            if (!password) {
+                alert('password needed.');
+                return;
+            }
+            
+            comm.authorize(username, password);
+        });
+        
+        $('#sidebar-overview').click(function() {
+            comm.displayOverview();
+        });
+        
+        $('#sidebar-projects').click(function() {
+            comm.displayProjects();
+        });
+        
+        $('#sidebar-rooms').click(function() {
+            comm.displayRooms();
+        });
+        
+        $('#sidebar-judges').click(function() {
+            comm.displayJudges();
+        });
+        
+        $('#password').keypress(function (e) {
+          if (e.which == 13) {
+            var username = $('#username').val();
+            var password = $('#password').val();
+            
+            if (!username) {
+                alert('username needed.');
+                return;
+            }
+            
+            if (!password) {
+                alert('password needed.');
+                return;
+            }
+            
+            comm.authorize(username, password);
+            return false;
+          }
+        });
+    });
+</script>
+
+</html>
