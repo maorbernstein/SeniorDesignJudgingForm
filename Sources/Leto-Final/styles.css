@@ -282,3 +282,14 @@ body {
     color: white;
     position: absolute;
 }
+
+.icon {
+    width: 28px;
+    height: 28px;
+}
+
+.add-icon {
+    background-image: url('AddButton.svg');
+    background-repeat: no-repeat;
+    cursor: pointer;
+}

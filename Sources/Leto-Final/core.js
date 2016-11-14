@@ -114,7 +114,7 @@ Core.prototype.loadInfo = function() {
             		"tag": "poise"
             	}]
             }, {
-            	"name": "RESOLUTION",
+            	"name": "CONSIDERATION",
             	"type": 1,
             	"items": [{
             		"id": 13,
@@ -220,7 +220,13 @@ Core.prototype.submitEval = function() {
     
     self._submitRequest('/judge_submit.cgi', evaluations, (error, data) => {
         if(!error) {
-            alert('Success.');
+            self.currentTeam.submitted = true;
+            $('#section-5').remove();
+            $('input[type=radio]').prop('disabled', true);
+            $('input[type=checkbox]').prop('disabled', true);
+            $('textarea#comment').prop('disabled', true);
+            $('#eval-submit').prop('disabled', true);
+            $('#eval-submit').prop('value', 'This evaluation is already submitted.');
         } else {
             alert(error);
         }

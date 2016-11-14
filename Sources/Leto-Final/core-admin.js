@@ -197,6 +197,8 @@ Core.prototype._basicRoomsContent = function() {
             '<div class="section header">' +
                 '<label>Rooms</label>' +
             '</div>' +
+            '<div id="project-add-button" class="icon add-icon" style="position: absolute; top: 12px; right: 20px;">' +
+            '</div>' +
             '<div id="section-table" class="section table-view" style="left: 0px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
             '</div>' +
         '</div>' +
@@ -356,12 +358,17 @@ Core.prototype._basicJudgesContent = function() {
             '<div class="section header">' +
                 '<label>Judges</label>' +
             '</div>' +
+            '<div id="project-add-button" class="icon add-icon" style="position: absolute; top: 12px; right: 20px;">' +
+            '</div>' +
             '<div id="section-table" class="section table-view" style="left: 0px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
             '</div>' +
         '</div>' +
         '<div id="content" class="content-container" style="left: 550px; right: 0px; top: 0px; bottom: 0px; overflow: hidden;">' +
             '<div class="content header">' +
                 '<label>Details</label>' +
+            '</div>' +
+            '<div id="judge-generate-infocard" class="content button" style="position: absolute; top: 3px; right: 20px;">' +
+                'Generate Information Card' +
             '</div>' +
             '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
                 '<div id="main-title" class="content title">' +
@@ -415,6 +422,10 @@ Core.prototype.displayJudges = function() {
     
     $('#primary-content').html(self._basicJudgesContent());
     self.selectedJudge = undefined;
+    
+    $('#judge-generate-infocard').click(function() {
+        alert('Judge ID:' + self.selectedJudge.id);
+    });
     
     for(var index in self.judges) {
         var judge = self.judges[index];
@@ -537,6 +548,8 @@ Core.prototype._basicProjectContent = function() {
     var viewContent = '<div id="sec-nav" class="left-column" style="left: 230px; width: 320px; top: 0px; bottom: 0px; overflow: hidden;">' +
             '<div class="section header">' +
                 '<label>Projects</label>' +
+            '</div>' +
+            '<div id="project-add-button" class="icon add-icon" style="position: absolute; top: 12px; right: 20px;">' +
             '</div>' +
             '<div id="section-table" class="section table-view" style="left: 0px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
             '</div>' +
@@ -667,7 +680,7 @@ Core.prototype._generateDetailReportContent = function(data) {
         content += '</table>';
         
         if (resolutions.length > 0) {
-            content += '<h4>Resolutions:</h4><span>'+resolutions.join(', ')+'</span>';
+            content += '<h4>Considerations:</h4><span>'+resolutions.join(', ')+'</span>';
         }
         
         if (comment) {
@@ -1029,8 +1042,24 @@ Core.prototype._generateSummaryReport = function() {
         
         var winner = 'Unknown';
         var projects = room.projects.sort((a, b) => {
-            var keyA = a.score,
-                keyB = b.score;
+            var fullProjectA = self.projects_map[a.id];
+            var totalScoreA = 0;
+            
+            for(var e_idx in fullProjectA.evaluations) {
+                var evaluation = fullProjectA.evaluations[e_idx];
+                totalScoreA += evaluation.score;
+            }
+            
+            var fullProjectB = self.projects_map[b.id];
+            var totalScoreB = 0;
+            
+            for(var e_idx in fullProjectB.evaluations) {
+                var evaluation = fullProjectB.evaluations[e_idx];
+                totalScoreB += evaluation.score;
+            }
+            
+            var keyA = totalScoreA,
+                keyB = totalScoreB;
             
             if (keyA < keyB) return 1;
             if (keyA > keyB) return -1;
@@ -1041,11 +1070,19 @@ Core.prototype._generateSummaryReport = function() {
             winner = projects[0].name;
         }
         
-        content += '<br><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><h2>'+room.name+'</h2><h4>Winner: '+winner+'</h4><div style="width: 75%;"><table><tr><th>Team</th><th>Score (Total)</th></tr>';
+        content += '<br><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><h2>'+room.name+'</h2><h4>Winner: '+winner+'</h4><div style="width: 75%;"><table><tr><th>Team</th><th>Score (Avg)</th><th>Score (Total)</th></tr>';
         
         for(var p_idx in projects) {
             var project = projects[p_idx];
-            content += '<tr><th>'+project.name+'</th><th>'+project.score+'</th></tr>'
+            var fullProject = self.projects_map[project.id];
+            var totalScore = 0;
+            
+            for(var e_idx in fullProject.evaluations) {
+                var evaluation = fullProject.evaluations[e_idx];
+                totalScore += evaluation.score;
+            }
+            
+            content += '<tr><th>'+project.name+'</th><th>'+project.score+'</th><th>'+totalScore+'</th></tr>'
         }
           
         content += '</table></div>';
@@ -1245,6 +1282,9 @@ Core.prototype._submitRequest = function(endpoint, data, callback) {
 
 Core.prototype.showSignIn = function() {
     var content = '<div id="sign-in" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;background-color:#457cac;">' +
+        '<div style="position:absolute; bottom: 8px; right: 8px; color: white; cursor: pointer;">' +
+            'Fogot Password?' +
+        '</div>' +
         '<div class="modal-popup" style="margin-top: -89px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 178px;">' +
             '<div class="modal-popup-title">' +
                 'Sign In' +
