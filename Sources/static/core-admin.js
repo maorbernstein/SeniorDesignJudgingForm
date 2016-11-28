@@ -442,7 +442,7 @@ Core.prototype._basicRoomsContent = function() {
             '<div id="room-delete-button" class="content button" style="position: absolute; top: 3px; left: 20px;">' +
                 'Delete' +
             '</div>' +
-            '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
+            '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;overflow-x: hidden;">' +
                 '<div id="main-title" class="content title">' +
                     '<span></span>' +
                 '</div>' +
@@ -718,7 +718,7 @@ Core.prototype._basicJudgesContent = function() {
             '<div id="judge-generate-infocards" class="content button" style="position: absolute; top: 3px; right: 20px;">' +
                 'Generate Information Cards' +
             '</div>' +
-            '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
+            '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;overflow-x: hidden;">' +
                 '<div id="main-title" class="content title">' +
                     '<span></span>' +
                 '</div>' +
@@ -1117,7 +1117,7 @@ Core.prototype._basicProjectContent = function() {
             '<div id="project-generate-report" class="content button" style="position: absolute; top: 3px; right: 20px;">' +
                 'Generate Report' +
             '</div>' +
-            '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
+            '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;overflow-x: hidden;">' +
                 '<div id="main-title" class="content title">' +
                     '<span></span>' +
                 '</div>' +
@@ -1677,7 +1677,7 @@ Core.prototype._basicOverviewContent = function() {
         '<div id="content" class="content-container" style="left: 230px; right: 0px; top: 0px; bottom: 0px; overflow: hidden;">' +
             '<div class="content header">' +
             '</div>' +
-            '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
+            '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;overflow-x: hidden;">' +
                 '<div id="main-title" class="content title">' +
                     '<span>Overview</span>' +
                 '</div>' +
@@ -1915,74 +1915,98 @@ Core.prototype.generateCSVFinalReport = function() {
 			    
 			    finalReport += judge.name + ',';
 			    
-			    if (evaluation['tech']) {
+			    if (evaluation['tech'] && evaluation['tech'] != -1) {
 				    finalReport += evaluation['tech'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',';
 			    
-			    if (evaluation['creativity']) {
+			    if (evaluation['creativity'] && evaluation['creativity'] != -1) {
 				    finalReport += evaluation['creativity'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',';
 			    
-			    if (evaluation['analytical_work']) {
+			    if (evaluation['analytical_work'] && evaluation['analytical_work'] != -1) {
 				    finalReport += evaluation['analytical_work'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',';
 			    
-			    if (evaluation['design_process']) {
+			    if (evaluation['design_process'] && evaluation['design_process'] != -1) {
 				    finalReport += evaluation['design_process'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',';
 			    
-			    if (evaluation['complexity']) {
+			    if (evaluation['complexity'] && evaluation['complexity'] != -1) {
 				    finalReport += evaluation['complexity'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',';
 			    
-			    if (evaluation['completion']) {
+			    if (evaluation['completion'] && evaluation['completion'] != -1) {
 				    finalReport += evaluation['completion'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',';
 			    
-			    if (evaluation['tests']) {
+			    if (evaluation['tests'] && evaluation['tests'] != -1) {
 				    finalReport += evaluation['tests'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',';
 			    
-			    if (evaluation['response_qa']) {
+			    if (evaluation['response_qa'] && evaluation['response_qa'] != -1) {
 				    finalReport += evaluation['response_qa'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',,';
 			    
-			    if (evaluation['organization']) {
+			    if (evaluation['organization'] && evaluation['organization'] != -1) {
 				    finalReport += evaluation['organization'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',';
 			    
-			    if (evaluation['time']) {
+			    if (evaluation['time'] && evaluation['time'] != -1) {
 				    finalReport += evaluation['time'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',';
 			    
-			    if (evaluation['visual_aids']) {
+			    if (evaluation['visual_aids'] && evaluation['visual_aids'] != -1) {
 				    finalReport += evaluation['visual_aids'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',';
 			    
-			    if (evaluation['poise']) {
+			    if (evaluation['poise'] && evaluation['poise'] != -1) {
 				    finalReport += evaluation['poise'];
+			    } else {
+				    finalReport += 'N/A';
 			    }
 			    
 			    finalReport += ',,';
