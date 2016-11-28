@@ -182,7 +182,8 @@ Core.prototype.loadInfo = function() {
                 }
             }
         } else {
-            // TODO: Error Handling;
+	        alert('An error occurred when loading project information. Please try again later.');
+            self.signOut();
         }
     });
 }
