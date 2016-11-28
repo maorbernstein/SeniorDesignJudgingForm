@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<title>Management</title>
-	<link rel="stylesheet" href="styles.css?5">
+	<link rel="stylesheet" href="styles.css">
 </head>
 
 <body style="overflow: hidden;">
@@ -41,7 +41,8 @@
 
 <script src="./js.cookie.js"></script>
 <script src="./moment.min.js"></script>
-<script src="./core-admin.js?6"></script>
+<script src="./FileSaver.min.js"></script>
+<script src="./core-admin.js"></script>
 <script>
     $(document).ready(function() {
         var comm = new Core();
@@ -49,23 +50,6 @@
         
         $('#sign-out').click(function(){
             comm.signOut();
-        });
-        
-        $('#sign-in-btn').click(function(){
-            var username = $('#username').val();
-            var password = $('#password').val();
-            
-            if (!username) {
-                alert('username needed.');
-                return;
-            }
-            
-            if (!password) {
-                alert('password needed.');
-                return;
-            }
-            
-            comm.authorize(username, password);
         });
         
         $('#sidebar-overview').click(function() {
@@ -82,26 +66,6 @@
         
         $('#sidebar-judges').click(function() {
             comm.displayJudges();
-        });
-        
-        $('#password').keypress(function (e) {
-          if (e.which == 13) {
-            var username = $('#username').val();
-            var password = $('#password').val();
-            
-            if (!username) {
-                alert('username needed.');
-                return;
-            }
-            
-            if (!password) {
-                alert('password needed.');
-                return;
-            }
-            
-            comm.authorize(username, password);
-            return false;
-          }
         });
     });
 </script>

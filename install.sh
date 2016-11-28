@@ -21,21 +21,21 @@ compile(){
   g++ -std=c++0x -Wall -g -I ./ -o cgi-bin/admin_remove_project.cgi cpp/admin_remove_project.cpp $COMMON_LIBS
   g++ -std=c++0x -Wall -g -I ./ -o cgi-bin/admin_remove_room.cgi cpp/admin_remove_room.cpp $COMMON_LIBS
 }
-echo "Untarring the Tarball\n"
+echo "Untarring the Tarball"
 tarname=judgeEval.tar.gz
 tar -xzvf $tarname
 rm $tarname
-echo "Creating cgi-bin directory\n"
+echo "Creating cgi-bin directory"
 mkdir cgi-bin
 mv Sources/cpp cpp
-echo "Begun compilation\n"
+echo "Begun compilation"
 compile
 rm -r cpp
-echo "Compilation complete\nCreating schema directories\n"
+echo "Compilation complete, creating schema directories"
 mv Config cgi-bin/Config
 mkdir cgi-bin/Eval
 mv Sources/static/* ./
-echo "Configuring permissions\n"
+echo "Configuring permissions"
 chmod 600 cgi-bin/Config/*
 chmod 700 cgi-bin/*.cgi
 chmod 755 cgi-bin
@@ -44,4 +44,4 @@ chmod 666 *.html
 chmod 666 *.js
 chmod 666 *.css
 rm -r Sources
-echo "Complete\n"
+echo "Complete"
