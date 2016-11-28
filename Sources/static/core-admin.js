@@ -174,6 +174,7 @@ Core.prototype._loadProjects = function(initial, callback) {
                 project.evaluations = evals;
                 var projectTime = moment.unix(project.time);
                 project.time = projectTime.format('h:mma');
+                project.moment = projectTime;
             }
             
             if (initial) {
@@ -293,6 +294,93 @@ Core.prototype.requestServerProjectUpdate = function(id, key, value, callback) {
     });
 }
 
+Core.prototype.requestServerJudgeDeletion = function(id, callback) {
+	var self = this;
+	
+	var request = {
+		id: id
+	};
+	
+	self._submitRequest('/admin_remove_judge.cgi', request, (error, data) => {
+        if (callback) {
+	        if (error) {
+		        callback(error);
+	        } else {
+		        callback(undefined, data);
+	        }
+        }
+    });
+}
+
+Core.prototype.requestServerResetPassword = function(callback) {
+	var self = this;
+	
+	self._submitRequest('/admin_forgot_password.cgi', (error, data) => {
+        if (callback) {
+	        if (error) {
+		        callback(error);
+	        } else {
+		        callback(undefined, data);
+	        }
+        }
+    });
+}
+
+Core.prototype.requestServerUpdatePassword = function(token, password, callback) {
+	var self = this;
+	
+	var request = {
+		reset_token: token,
+		password: password
+	};
+	
+	self._submitRequest('/admin_reset_password.cgi', request, (error, data) => {
+        if (callback) {
+	        if (error) {
+		        callback(error);
+	        } else {
+		        callback(undefined, data);
+	        }
+        }
+    });
+}
+
+Core.prototype.requestServerProjectDeletion = function(id, callback) {
+	var self = this;
+	
+	var request = {
+		id: id
+	};
+	
+	self._submitRequest('/admin_remove_project.cgi', request, (error, data) => {
+        if (callback) {
+	        if (error) {
+		        callback(error);
+	        } else {
+		        callback(undefined, data);
+	        }
+        }
+    });
+}
+
+Core.prototype.requestServerRoomDeletion = function(id, callback) {
+	var self = this;
+	
+	var request = {
+		id: id
+	};
+	
+	self._submitRequest('/admin_remove_room.cgi', request, (error, data) => {
+        if (callback) {
+	        if (error) {
+		        callback(error);
+	        } else {
+		        callback(undefined, data);
+	        }
+        }
+    });
+}
+
 Core.prototype.requestServerJudgeUpdate = function(id, key, value, callback) {
 	var self = this;
 	
@@ -352,8 +440,8 @@ Core.prototype._basicRoomsContent = function() {
             '</div>' +
         '</div>' +
         '<div id="content" class="content-container" style="left: 550px; right: 0px; top: 0px; bottom: 0px; overflow: hidden;">' +
-            '<div class="content header">' +
-                '<label>Details</label>' +
+            '<div id="room-delete-button" class="content button" style="position: absolute; top: 3px; left: 20px;">' +
+                'Delete' +
             '</div>' +
             '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
                 '<div id="main-title" class="content title">' +
@@ -365,9 +453,6 @@ Core.prototype._basicRoomsContent = function() {
                 '<div class="content table-view" style="left: 36px; top: 86px;">' +
                     '<div class="header">' +
                         '<header>PROJECTS</header>' +
-                        '<div style="position: absolute; right: 60px; top: -4px;float: right;">' +
-                            '<button id="add-session">Add Project</button>' +
-                        '</div>' +
                     '</div>' +
                     '<div class="cc-tv-separator"></div>' +
                     '<div id="content-projects">' +
@@ -476,6 +561,29 @@ Core.prototype.displayRooms = function() {
 		    });
 	    });
     })
+    
+    $('#room-delete-button').click(function() {
+	    if (self.selectedRoom) {
+		    self.requestServerRoomDeletion(self.selectedRoom.room_id, (error, data) => {
+			    if (!error && data.status == 0) {
+				    self.selectedRoom = undefined;
+				    
+				    self._loadOverview(false);
+				    self._loadJudges(false);
+				    self._loadProjects(false);
+				    self._loadRooms(false, () => {
+					    self.displayRooms();
+				    });
+			    } else {
+				    if (data.status == -2) {
+					    alert('Cannot remove room that associated with projects or judges.')
+				    } else {
+    				    alert(data.error);
+				    }
+			    }
+		    });
+	    }
+    });
     
     if (self.selectedRoom) {
 	    self.lastSelectedRoomId = self.selectedRoom.room_id;
@@ -605,11 +713,8 @@ Core.prototype._basicJudgesContent = function() {
             '</div>' +
         '</div>' +
         '<div id="content" class="content-container" style="left: 550px; right: 0px; top: 0px; bottom: 0px; overflow: hidden;">' +
-            '<div class="content header">' +
-                '<label>Details</label>' +
-            '</div>' +
-            '<div id="judge-generate-infocard" class="content button" style="position: absolute; top: 3px; right: 20px;">' +
-                'Generate Information Card' +
+            '<div id="judge-delete-button" class="content button" style="position: absolute; top: 3px; left: 20px;">' +
+                'Delete' +
             '</div>' +
             '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
                 '<div id="main-title" class="content title">' +
@@ -755,14 +860,27 @@ Core.prototype.displayJudges = function() {
     
     self.selectedJudge = undefined;
     
-    $('#judge-generate-infocard').click(function() {
-        alert('Judge ID:' + self.selectedJudge.id);
-    });
-    
     $('#judge-add-button').click(function() {
 	    self.displayAddJudgeView();
     });
     
+    $('#judge-delete-button').click(function() {
+	    if (self.selectedJudge) {
+		    self.requestServerJudgeDeletion(self.selectedJudge.id, (error, data) => {
+			    if (!error && data.status == 0) {
+				    self.selectedJudge = undefined;
+				    
+				    self._loadOverview(false);
+				    self._loadProjects(false);
+				    self._loadRooms(false);
+				    self._loadJudges(false, () => {
+					    self.displayJudges();
+				    });
+			    }
+		    });
+	    }
+    });
+        
     for(var index in self.judges) {
         var judge = self.judges[index];
         var cellId = 'judge-' + index;
@@ -809,7 +927,7 @@ Core.prototype.didSelectJudge = function(judge) {
     
     self.selectedJudge = judge;
     $('#main-title span').html(judge.name);
-    $('#main-subtitle span').html(judge.subtitle);
+    $('#main-subtitle span').html(judge.subtitle + ' | ' + judge.id);
     
     self._updateJudgeRoom();
     self._updateJudgeEvaluations();
@@ -968,8 +1086,8 @@ Core.prototype._basicProjectContent = function() {
             '</div>' +
         '</div>' +
         '<div id="content" class="content-container" style="left: 550px; right: 0px; top: 0px; bottom: 0px; overflow: hidden;">' +
-            '<div class="content header">' +
-                '<label>Details</label>' +
+            '<div id="project-delete-button" class="content button" style="position: absolute; top: 3px; left: 20px;">' +
+                'Delete' +
             '</div>' +
             '<div id="project-generate-report" class="content button" style="position: absolute; top: 3px; right: 20px;">' +
                 'Generate Report' +
@@ -1151,9 +1269,10 @@ Core.prototype.generateDetailReport = function() {
 
 Core.prototype.displayProjectUpdateRoomView = function() {
 	var self = this;
+	var updating = false;
 	
 	var content = '<div id="update-project-room-overlay" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;">' +
-        '<div class="modal-popup" style="margin-top: -81px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 162px;">' +
+        '<div class="modal-popup" style="margin-top: -116px; margin-left: -200px; left: 50%; width: 400px; top: 50%; height: 233px;">' +
             '<div class="modal-popup-title">' +
                 'Update Room' +
             '</div>' +
@@ -1165,6 +1284,9 @@ Core.prototype.displayProjectUpdateRoomView = function() {
 	                    	content += '<option value="'+room.room_id+'">'+ room.name +'</option>';
                     	}
         content += '</select>' +
+                '</div>' +
+                '<div id="room-time" class="modal-popup-input-item non-click non-last">' +
+                    '<input id="project-update-time" type="text" class="textfield" placeholder="05/12/16 14:00">' +
                 '</div>' +
                 '<div style="position:absolute;left: 0px;right: 0px;height: 52px;bottom: 0px;">' +
 	                '<div id="confirm-cancel-button" class="content button" style="position: absolute;left: 8px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;">' +
@@ -1178,15 +1300,21 @@ Core.prototype.displayProjectUpdateRoomView = function() {
         '</div>' +
     '</div>';
     
-    $('body').append(content);
-    
+    $('body').append(content);    
     $('#project-update-room-select').val(self.selectedProject.room_id);
+    $('#project-update-time').val(self.selectedProject.moment.format('MM/DD/YY HH:mm'));
     
     $('#confirm-cancel-button').click(function(){
 	    $('#update-project-room-overlay').remove();
     });
     
     $('#confirm-update-button').click(function(){
+	    if (updating) {
+		    return;
+	    }
+	    
+	    updating = true;
+	    
 	    var selectedRoomId = $('#project-update-room-select').val();
 	    
 	    if (!selectedRoomId || selectedRoomId == self.unassignedRoomId) {
@@ -1194,18 +1322,130 @@ Core.prototype.displayProjectUpdateRoomView = function() {
 		    return;
 	    }
 	    
+	    var enteredTime = $('#project-update-time').val();
+	    if (!enteredTime) {
+		    alert('You need to enter a time');
+		    return;
+	    }
+	    
+	    var parsedTime = moment(enteredTime, 'MM/DD/YY HH:mm');
+	    if (!parsedTime) {
+		    alert('Failed to parse the time. Please make sure you entered correct time.');
+		    return;
+	    }
+	    
+	    $('#confirm-update-button').addClass('disabled');
+	    
 	    self.requestServerProjectUpdate(self.selectedProject.id, 'room_id', selectedRoomId, (error,data) => {
 		    if (!error && data.status == 0) {
-			    self._loadRooms(false);
-			    self._loadOverview(false);
-			    self._loadJudges(false);
-			    self._loadProjects(false, () => {
-				    self.displayProjects();
-    			    $('#update-project-room-overlay').remove();
+			    self.requestServerProjectUpdate(self.selectedProject.id, 'time', parsedTime.unix(), (error, data) => {
+				    if (!error && data.status == 0) {
+					    self._loadRooms(false);
+					    self._loadOverview(false);
+					    self._loadJudges(false);
+					    self._loadProjects(false, () => {
+						    self.displayProjects();
+		    			    $('#update-project-room-overlay').remove();
+					    });
+				    }
 			    });
 		    }
 	    });
     })
+}
+
+Core.prototype.displayImportProjectsView = function() {
+	var self = this;
+	
+	if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
+		alert('Import projects is not supported in this browser.');
+		return;
+    }
+	
+	if (!self.unassignedRoomId) {
+		self._addUnassignedRoom();
+	}
+	
+	var content = '<div id="import-projects-overlay" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;">' +
+        '<div class="modal-popup" style="margin-top: -81px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 162px;">' +
+            '<div class="modal-popup-title">' +
+                'Import Projects' +
+            '</div>' +
+            '<div class="stack-view">' +
+                '<div id="project-file-container" class="modal-popup-file non-last">' +
+                	'<label id="import-project-file-label" for="import-project-file" style="text-overflow: ellipsis;height: 100%;width: 100%;overflow: hidden;display: inline-block;">Select File</label>' +
+                    '<input id="import-project-file" type="file" name="import-project-file" accept=".csv"/>' +
+                '</div>' +
+                '<div style="position:absolute;left: 0px;right: 0px;height: 52px;bottom: 0px;">' +
+	                '<div id="confirm-cancel-button" class="content button" style="position: absolute;left: 8px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;">' +
+                    	'Cancel' +
+                    '</div>' +
+                    '<div id="confirm-add-button" class="content button disabled" style="position: absolute;right: 4px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;font-weight:500;">' +
+                    	'Import' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+    
+    $('body').append(content);
+    
+    $('#import-project-file').change(function(){
+	    $('#confirm-add-button').removeClass('disabled');
+	    $('#import-project-file-label').html($('input#import-project-file')[0].files[0].name);
+    });
+    
+    $('#confirm-cancel-button').click(function(){
+	    $('#import-projects-overlay').remove();
+    });
+    $('#confirm-add-button').click(function(){
+	    if (!self.unassignedRoomId) {
+		    alert('An error occurred. Cannot import projects right now. Please try again later.');
+		    $('#import-projects-overlay').remove();
+		    return;
+	    }
+	    
+	    var projectFile = $('input#import-project-file')[0].files[0];
+        
+        if (!projectFile) {
+	        alert('Project file needed.');
+            return;
+        }
+        
+        var projects = [];
+        
+        var fr = new FileReader();
+		fr.onload = function() {
+			var data = fr.result;
+			var processedResults = CSVToArray(data);
+			for (var index in processedResults) {
+				var result = processedResults[index];
+				if (result.length < 4) {
+					continue;
+				}
+				
+				var project = {};
+				project['name'] = result[0];
+				project['members'] = result[1];
+				project['description'] = result[2];
+				project['time'] = moment(result[3], 'MM/DD/YY HH:mm').unix();
+				project['room_id'] = self.unassignedRoomId;
+				
+				projects.push(project);
+			}
+			
+			self.addItems(projects, undefined, undefined, (error, data) => {
+		        if (!error && data.status === 0) {
+			        self._loadOverview(false);
+			        self._loadProjects(false, () => {
+				    	$('#import-projects-overlay').remove();
+				    	self.displayProjects();
+			        });
+		        }
+	        });
+		};
+		fr.readAsText(projectFile);
+    });
 }
 
 Core.prototype.displayProjects = function() {
@@ -1226,6 +1466,28 @@ Core.prototype.displayProjects = function() {
     self.selectedProject = undefined;
     
     $('#primary-content').html(self._basicProjectContent());
+    
+    $('#project-add-button').click(function() {
+	    self.displayImportProjectsView();
+    });
+    
+    $('#project-delete-button').click(function() {
+	    if (self.selectedProject) {
+		    self.requestServerProjectDeletion(self.selectedProject.id, (error, data) => {
+			    if (!error && data.status == 0) {
+				    self.selectedProject = undefined;
+				    
+				    self._loadOverview(false);
+				    self._loadJudges(false);
+				    self._loadRooms(false);
+				    self._loadProjects(false, () => {
+					    self.displayProjects();
+				    });
+			    }
+		    });
+	    }
+    });
+    
     $('#project-generate-report').click(function() {
         self.generateDetailReport();
     });
@@ -1235,8 +1497,14 @@ Core.prototype.displayProjects = function() {
         var cellId = 'project-' + index;
         
         var room = self.rooms_map[project.room_id];
-        var projectSub = room.name_abv + ' | ' + project.time;
-        var projectExtra = Object.keys(project.evaluations).length + ' Judges';
+        
+        var projectSub = 'Unassigned | ' + project.time;
+        var projectExtra = '0 Judges';
+        
+        if (room) {
+	        projectSub = room.name_abv + ' | ' + project.time;
+	        projectExtra = Object.keys(project.evaluations).length + ' Judges';
+        }
         
         var cellContent = self._generateProjectCell(cellId, project.name, projectSub, projectExtra);
         $('#section-table').append(cellContent);
@@ -1303,9 +1571,15 @@ Core.prototype._updateProjectRoom = function() {
     $('#content-room').html('');
     
     var room = self.rooms_map[self.selectedProject.room_id];
+    
+    var title = 'Unassigned';
+    if (room) {
+	    title = room.name;
+    }
+    
     var time = self.selectedProject.time;
     
-    var cellContent = self._generateProjectRoomCell(room.name, time);
+    var cellContent = self._generateProjectRoomCell(title, time);
     $('#content-room').append(cellContent);
     
     $('#update-room').click(function() {
@@ -1654,12 +1928,92 @@ Core.prototype._submitRequest = function(endpoint, data, callback) {
     });
 }
 
+Core.prototype.resetPassword = function() {
+	var self = this;
+	
+	$('#sign-in-popup').remove();
+	
+	var content = '<div id="sign-in-popup" class="modal-popup" style="margin-top: -124px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 248px;">' +
+            '<div class="modal-popup-title">' +
+                'Reset Password' +
+            '</div>' +
+            '<div class="stack-view">' +
+            	'<div id="request-token-button" class="modal-popup-item non-last">' +
+                    'Request Token' +
+                '</div>' +
+                '<div id="reset-token" class="modal-popup-input-item non-click non-last">' +
+                    '<input id="token" type="text" class="judge-reset-token" placeholder="Token">' +
+                '</div>' +
+                '<div id="reset-new-password" class="modal-popup-input-item non-click">' +
+                    '<input id="password" type="password" class="judge-reset-input" placeholder="Password">' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    
+    $('#sign-in').append(content);
+    
+    $('#request-token-button').click(function() {
+	    self.requestServerResetPassword((error, data) => {
+		    if (!error && data.status == 0) {
+    		    alert('Please check your email for reset token');
+		    } else {
+			    alert('An unknown error occurred');
+		    }
+	    });
+    });
+    
+    $('#password').keypress(function (e) {
+      if (e.which == 13) {
+        var token = $('#token').val();
+        var password = $('#password').val();
+        
+        if (!token) {
+            alert('token needed.');
+            return;
+        }
+        
+        if (!password) {
+            alert('password needed.');
+            return;
+        }
+        
+        self.requestServerUpdatePassword(token, password, (error, data) => {
+	        if (!error && data.status == 0) {
+		        alert('Password updated. Please sign in with new password.');
+		        $('#sign-in-popup').remove();
+		        var content = '<div id="sign-in-popup" class="modal-popup" style="margin-top: -89px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 178px;">' +
+		            '<div class="modal-popup-title">' +
+		                'Sign In' +
+		            '</div>' +
+		            '<div class="stack-view">' +
+		                '<div id="sign-in-username" class="modal-popup-input-item non-click non-last">' +
+		                    '<input id="username" type="text" class="judge-signin-input" placeholder="Username">' +
+		                '</div>' +
+		                '<div id="sign-in-password" class="modal-popup-input-item non-click">' +
+		                    '<input id="password" type="password" class="judge-signin-input" placeholder="Password">' +
+		                '</div>' +
+		            '</div>' +
+		        '</div>';
+			    
+			    $('#sign-in').append(content);
+	        } else {
+		        alert('An error occurred when updating password. Please try again later.');
+	        }
+        });
+        
+        return false;
+      }
+    });
+}
+
 Core.prototype.showSignIn = function() {
+	var self = this;
+	
     var content = '<div id="sign-in" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;background-color:#457cac;">' +
-        '<div style="position:absolute; bottom: 8px; right: 8px; color: white; cursor: pointer;">' +
-            'Fogot Password?' +
+        '<div id="forgot-password" style="position:absolute; bottom: 8px; right: 8px; color: white; cursor: pointer;">' +
+            'Forgot Password?' +
         '</div>' +
-        '<div class="modal-popup" style="margin-top: -89px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 178px;">' +
+        '<div id="sign-in-popup" class="modal-popup" style="margin-top: -89px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 178px;">' +
             '<div class="modal-popup-title">' +
                 'Sign In' +
             '</div>' +
@@ -1675,9 +2029,95 @@ Core.prototype.showSignIn = function() {
     '</div>';
 
     $('body').append(content);
+    
+    $('#forgot-password').click(function() {
+	    self.resetPassword();
+    });
 }
 
 Core.prototype.signOut = function() {
     Cookies.remove('token');
     location.reload();
+}
+
+function CSVToArray( strData, strDelimiter ){
+	// Check to see if the delimiter is defined. If not,
+	// then default to comma.
+	strDelimiter = (strDelimiter || ",");
+
+	// Create a regular expression to parse the CSV values.
+	var objPattern = new RegExp(
+		(
+			// Delimiters.
+			"(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+			// Quoted fields.
+			"(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+			// Standard fields.
+			"([^\"\\" + strDelimiter + "\\r\\n]*))"
+		),
+		"gi"
+		);
+
+
+	// Create an array to hold our data. Give the array
+	// a default empty first row.
+	var arrData = [[]];
+
+	// Create an array to hold our individual pattern
+	// matching groups.
+	var arrMatches = null;
+
+
+	// Keep looping over the regular expression matches
+	// until we can no longer find a match.
+	while (arrMatches = objPattern.exec( strData )){
+
+		// Get the delimiter that was found.
+		var strMatchedDelimiter = arrMatches[ 1 ];
+
+		// Check to see if the given delimiter has a length
+		// (is not the start of string) and if it matches
+		// field delimiter. If id does not, then we know
+		// that this delimiter is a row delimiter.
+		if (
+			strMatchedDelimiter.length &&
+			(strMatchedDelimiter != strDelimiter)
+			){
+
+			// Since we have reached a new row of data,
+			// add an empty row to our data array.
+			arrData.push( [] );
+
+		}
+
+
+		// Now that we have our delimiter out of the way,
+		// let's check to see which kind of value we
+		// captured (quoted or unquoted).
+		if (arrMatches[ 2 ]){
+
+			// We found a quoted value. When we capture
+			// this value, unescape any double quotes.
+			var strMatchedValue = arrMatches[ 2 ].replace(
+				new RegExp( "\"\"", "g" ),
+				"\""
+				);
+
+		} else {
+
+			// We found a non-quoted value.
+			var strMatchedValue = arrMatches[ 3 ];
+
+		}
+
+
+		// Now that we have our value string, let's add
+		// it to the data array.
+		arrData[ arrData.length - 1 ].push( strMatchedValue );
+	}
+
+	// Return the parsed data.
+	return( arrData );
 }
