@@ -66,9 +66,9 @@ echo "Configuring permissions"
 chmod 600 cgi-bin/Config/*
 chmod 700 cgi-bin/*.cgi
 chmod 755 cgi-bin
-chmod 666 *.svg
-chmod 666 *.html
-chmod 666 *.js
-chmod 666 *.css
+chmod 644 *.svg
+chmod 644 *.html
+chmod 644 *.js
+chmod 644 *.css
 rm -r Sources
 echo "Complete"
