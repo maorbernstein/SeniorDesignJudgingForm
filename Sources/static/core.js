@@ -331,14 +331,21 @@ Core.prototype.generateRadioSection = function(sectionId, data) {
 }
 
 Core.prototype.generateCheckboxSection = function(sectionId, data) {
-    var sectionContent = '<div id="section-'+sectionId+'" class="lt-view" style="top: '+sectionId*20+'px;"><div class="lt-view" style="left: 10px">'+data.name+'</div><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><div class="lt-view" style="padding: 8px 0px; left: 35px; right:0px;"><span>Please select each of the following considerations that were addressed by the presentation.</span><div class="checkbox">';
+    var sectionContent = '<div id="section-'+sectionId+'" class="lt-view" style="top: '+sectionId*20+'px;"><div class="lt-view" style="left: 10px">'+data.name+'</div><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><div class="lt-view" style="padding: 8px 0px; left: 35px; right:0px;"><span>Please select each of the following considerations that were addressed by the presentation.</span><div class="checkbox"><table style="width:100%">';
                 
     for(var index in data.items) {
+	    if(index % 4 == 0) {
+		    sectionContent += '<tr>';
+	    }
         var item = data.items[index];
-        sectionContent += '<input type="checkbox" name="'+ item.tag +'" id="'+item.tag+'" value="'+item.id+'"><label for="'+item.id+'">'+item.title+'</label>';
+        sectionContent += '<td style="height: 60px;"><label class="check inline"><input type="checkbox" name="'+ item.tag +'" id="'+item.tag+'" value="'+item.id+'"><span>'+item.title+'</span></label></td>';
+        
+        if(index % 4 == 3) {
+		    sectionContent += '</tr>';
+	    }
     }
     
-    sectionContent += '</div></div><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div></div>';
+    sectionContent += '</table></div></div><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div></div>';
     
     return sectionContent;
 }

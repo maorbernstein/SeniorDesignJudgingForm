@@ -1,15 +1,3 @@
-function getParameterByName(name, url) {
-    if (!url) {
-      url = window.location.href;
-    }
-    name = name.replace(/[\[\]]/g, "\\$&");
-    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-        results = regex.exec(url);
-    if (!results) return null;
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, " "));
-}
-
 function Core() {
     var self = this;
     
@@ -68,12 +56,11 @@ Core.prototype.authorize = function(username, password) {
     });
 }
 
-Core.prototype.loadInfo = function() {
-    var self = this;
-    
-    self._submitRequest('/admin_overview.cgi', (error, data) => {
-        if (!error && data.rooms != undefined) {
-            self.overview = data.rooms.sort((a, b) => {
+Core.prototype._loadJudges = function(initial, callback) {
+	var self = this;
+    self._submitRequest('/admin_judges_info.cgi', (error, data) => {
+        if (!error && data.judges != undefined) {
+            self.judges = data.judges.sort((a, b) => {
                 var keyA = a.name,
                     keyB = b.name;
                 
@@ -82,14 +69,87 @@ Core.prototype.loadInfo = function() {
                 return 0;
             });
             
-            self.updateUI();
+            self.judges_map = {};
+            for (var index in self.judges) {
+                var judge = self.judges[index];
+                self.judges_map[judge.id] = judge;
+            }
+            
+            if (initial) {
+	            self.updateUI();
+            }
+            
+            if (callback) {
+	            callback();
+            }
         } else {
-            // TODO: Handle Error
+//             self.signOut();
+        }
+    });
+}
+
+Core.prototype._addUnassignedRoom = function() {
+	var self = this;
+	
+	var room = {
+		name: '###Core Unassigned Room',
+		name_abv: '###CUR'
+	}
+	
+	self.addItems(undefined, [room], undefined, () => {
+		self._loadRooms(false);
+	});
+}
+
+Core.prototype._loadRooms = function(initial, callback) {
+	var self = this;
+	
+	self._submitRequest('/admin_rooms_info.cgi', (error, data) => {
+        if (!error && data.rooms != undefined) {
+            self.rooms = data.rooms.sort((a, b) => {
+                var keyA = a.name,
+                    keyB = b.name;
+                
+                if (keyA < keyB) return -1;
+                if (keyA > keyB) return 1;
+                return 0;
+            });
+            
+            var unassignedRoomIndex = undefined;
+            
+            self.rooms_map = {};
+            for (var index in self.rooms) {
+                var room = self.rooms[index];
+                
+                if (room.name == '###Core Unassigned Room') {
+	                unassignedRoomIndex = index;
+	                self.unassignedRoomId = room.room_id;
+	                
+	                continue;
+                }
+                
+                self.rooms_map[room.room_id] = room;
+            }
+            
+            self.rooms.splice(unassignedRoomIndex, 1);
+            
+            if (initial) {
+	            self.updateUI();
+            }
+            
+            if (callback) {
+	            callback();
+            }
+        } else {
             self.signOut();
         }
     });
-    
-    self._submitRequest('/admin_projects_info.cgi', (error, data) => {
+}
+
+Core.prototype._loadProjects = function(initial, callback) {
+	var self = this;
+	
+	self._submitRequest('/admin_projects_info.cgi', (error, data) => {
         if (!error && data.projects != undefined) {
             self.projects = data.projects.sort((a, b) => {
                 var keyA = a.name,
@@ -116,16 +176,25 @@ Core.prototype.loadInfo = function() {
                 project.time = projectTime.format('h:mma');
             }
             
-            self.updateUI();
+            if (initial) {
+	            self.updateUI();
+            }
+            
+            if (callback) {
+	            callback();
+            }
         } else {
-            // TODO: Handle Error
             self.signOut();
         }
     });
-    
-    self._submitRequest('/admin_rooms_info.cgi', (error, data) => {
+}
+
+Core.prototype._loadOverview = function(initial, callback) {
+	var self = this;
+	
+    self._submitRequest('/admin_overview.cgi', (error, data) => {
         if (!error && data.rooms != undefined) {
-            self.rooms = data.rooms.sort((a, b) => {
+            self.overview = data.rooms.sort((a, b) => {
                 var keyA = a.name,
                     keyB = b.name;
                 
@@ -134,38 +203,114 @@ Core.prototype.loadInfo = function() {
                 return 0;
             });
             
-            self.rooms_map = {};
-            for (var index in self.rooms) {
-                var room = self.rooms[index];
+            var unassignedRoomIndex = undefined;
+            
+            for (var index in self.overview) {
+                var room = self.overview[index];
+                
+                if (room.name == '###Core Unassigned Room') {
+	                unassignedRoomIndex = index;	                
+	                break;
+                }
                 self.rooms_map[room.room_id] = room;
             }
             
-            self.updateUI();
-        } else {
-            // TODO: Handle Error
-        }
-    });
-    
-    self._submitRequest('/admin_judges_info.cgi', (error, data) => {
-        if (!error && data.judges != undefined) {
-            self.judges = data.judges.sort((a, b) => {
-                var keyA = a.name,
-                    keyB = b.name;
-                
-                if (keyA < keyB) return -1;
-                if (keyA > keyB) return 1;
-                return 0;
-            });
+            self.overview.splice(unassignedRoomIndex, 1);
             
-            self.judges_map = {};
-            for (var index in self.judges) {
-                var judge = self.judges[index];
-                self.judges_map[judge.id] = judge;
+            if (initial) {
+	            self.updateUI();
             }
             
-            self.updateUI();
+            if (callback) {
+	            callback();
+            }
         } else {
-            // TODO: Handle Error
+            self.signOut();
+        }
+    });
+}
+
+Core.prototype.loadInfo = function() {
+    var self = this;
+    
+    self._loadOverview(true);
+    self._loadProjects(true);
+    self._loadRooms(true);
+    self._loadJudges(true);
+}
+
+Core.prototype.addItems = function(projects, rooms, judges, callback) {
+	var self = this;
+	
+	if (!projects) {
+		projects = [];
+	}
+	
+	if (!rooms) {
+		rooms = [];
+	}
+	
+	if (!judges) {
+		judges = [];
+	}
+	
+	var request = {
+		projects: projects,
+		judges: judges,
+		rooms: rooms
+	};
+	
+	self._submitRequest('/admin_create.cgi', request, (error, data) => {
+        if (callback) {
+	        if (error) {
+		        callback(error);
+	        } else {
+		        callback(undefined, data);
+	        }
+        }
+    });
+}
+
+Core.prototype.requestServerProjectUpdate = function(id, key, value, callback) {
+	var self = this;
+	
+	var changes = {};
+	changes[key] = value;
+	
+	var request = {
+		id: id,
+		change: changes
+	};
+	
+	self._submitRequest('/admin_projects_update.cgi', request, (error, data) => {
+        if (callback) {
+	        if (error) {
+		        callback(error);
+	        } else {
+		        callback(undefined, data);
+	        }
+        }
+    });
+}
+
+Core.prototype.requestServerJudgeUpdate = function(id, key, value, callback) {
+	var self = this;
+	
+	var changes = {};
+	changes[key] = value;
+	
+	var request = {
+		id: id,
+		change: changes
+	};
+	
+	self._submitRequest('/admin_judges_update.cgi', request, (error, data) => {
+        if (callback) {
+	        if (error) {
+		        callback(error);
+	        } else {
+		        callback(undefined, data);
+	        }
         }
     });
 }
@@ -175,6 +320,10 @@ Core.prototype.updateUI = function() {
     
     if (!self.overview || !self.projects || !self.rooms || !self.judges) {
         return;
+    }
+    
+    if (!self.unassignedRoomId) {
+	    self._addUnassignedRoom();
     }
     
     self.displayOverview();
@@ -197,7 +346,7 @@ Core.prototype._basicRoomsContent = function() {
             '<div class="section header">' +
                 '<label>Rooms</label>' +
             '</div>' +
-            '<div id="project-add-button" class="icon add-icon" style="position: absolute; top: 12px; right: 20px;">' +
+            '<div id="room-add-button" class="icon add-icon" style="position: absolute; top: 12px; right: 20px;">' +
             '</div>' +
             '<div id="section-table" class="section table-view" style="left: 0px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
             '</div>' +
@@ -208,6 +357,9 @@ Core.prototype._basicRoomsContent = function() {
             '</div>' +
             '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
                 '<div id="main-title" class="content title">' +
+                    '<span></span>' +
+                '</div>' +
+                '<div id="main-subtitle" class="content subtitle">' +
                     '<span></span>' +
                 '</div>' +
                 '<div class="content table-view" style="left: 36px; top: 86px;">' +
@@ -238,6 +390,67 @@ Core.prototype._basicRoomsContent = function() {
     return viewContent;
 }
 
+Core.prototype.displayAddRoomView = function() {
+	var self = this;
+	
+	var content = '<div id="add-room-overlay" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;">' +
+        '<div class="modal-popup" style="margin-top: -116px; margin-left: -200px; left: 50%; width: 400px; top: 50%; height: 233px;">' +
+            '<div class="modal-popup-title">' +
+                'New Room' +
+            '</div>' +
+            '<div class="stack-view">' +
+                '<div id="new-room-name" class="modal-popup-input-item non-last">' +
+                    '<input id="input-room-name" type="text" class="text-input" placeholder="Room Name">' +
+                '</div>' +
+                '<div id="room-abv-cell" class="modal-popup-input-item non-last">' +
+                    '<input id="input-room-abv" type="text" class="text-input" placeholder="Room Abv">' +
+                '</div>' +
+                '<div style="position:absolute;left: 0px;right: 0px;height: 52px;bottom: 0px;">' +
+	                '<div id="confirm-cancel-button" class="content button" style="position: absolute;left: 8px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;">' +
+                    	'Cancel' +
+                    '</div>' +
+                    '<div id="confirm-add-button" class="content button" style="position: absolute;right: 4px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;font-weight:500;">' +
+                    	'Add' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+    
+    $('body').append(content);
+    $('#confirm-cancel-button').click(function(){
+	    $('#add-room-overlay').remove();
+    });
+    $('#confirm-add-button').click(function(){
+	    var roomName = $('#input-room-name').val();
+        var roomAbv = $('#input-room-abv').val();
+        
+        if (!roomName) {
+	        alert('Room name needed.');
+            return;
+        }
+        
+        if (!roomAbv) {
+	        alert('Room abbreviation needed.');
+            return;
+        }
+        
+        var newRoom = {
+	        name: roomName,
+	        name_abv: roomAbv
+        };
+        
+        self.addItems(undefined, [newRoom], undefined, (error, data) => {
+	        if (!error && data.status === 0) {
+		        self._loadRooms(false, () => {
+	    	        $('#add-room-overlay').remove();
+	    	        self.displayRooms();
+		        });
+	        }
+        });
+    });
+}
+
 Core.prototype.displayRooms = function() {
     var self = this;
     
@@ -247,6 +460,29 @@ Core.prototype.displayRooms = function() {
     $('#sidebar-judges').removeClass('highlighted');
     
     $('#primary-content').html(self._basicRoomsContent());
+    
+    $('#room-add-button').click(function() {
+	    self.displayAddRoomView();
+    });
+    
+    $('#add-judge').click(function() {
+	    var roomId = self.selectedRoom.room_id;
+	    self.displayAddJudgeView(roomId, () => {
+		    self._loadProjects(false);
+		    self._loadOverview(false);
+		    self._loadJudges(false);
+		    self._loadRooms(false, () => {
+			    self.displayRooms();
+		    });
+	    });
+    })
+    
+    if (self.selectedRoom) {
+	    self.lastSelectedRoomId = self.selectedRoom.room_id;
+	    if (!self.rooms_map[self.lastSelectedRoomId]) {
+		    self.lastSelectedRoomId = undefined;
+	    }
+    }
     
     self.selectedRoom = undefined;
     
@@ -271,6 +507,10 @@ Core.prototype.displayRooms = function() {
         });
         
         if (!self.selectedRoom) {
+	        if (self.lastSelectedRoomId && room.room_id != self.lastSelectedRoomId) {
+		        continue;
+	        }
+	        
             self.didSelectRoom(room);
             
             $(".sec-table-cell").each(function() {
@@ -348,6 +588,7 @@ Core.prototype.didSelectRoom = function(room) {
     
     self.selectedRoom = room;
     $('#main-title span').html(room.name);
+    $('#main-subtitle span').html(room.name_abv);
     
     self._updateRoomProjects();
     self._updateRoomJudges();
@@ -358,7 +599,7 @@ Core.prototype._basicJudgesContent = function() {
             '<div class="section header">' +
                 '<label>Judges</label>' +
             '</div>' +
-            '<div id="project-add-button" class="icon add-icon" style="position: absolute; top: 12px; right: 20px;">' +
+            '<div id="judge-add-button" class="icon add-icon" style="position: absolute; top: 12px; right: 20px;">' +
             '</div>' +
             '<div id="section-table" class="section table-view" style="left: 0px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
             '</div>' +
@@ -412,6 +653,89 @@ Core.prototype._generateJudgeCell = function(cellId, judgeName, subtitle) {
     return cellContent;
 }
 
+Core.prototype.displayAddJudgeView = function(room_id, callback) {
+	var self = this;
+	
+	if (!self.unassignedRoomId) {
+		self._addUnassignedRoom();
+	}
+	
+	var content = '<div id="add-judge-overlay" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;">' +
+        '<div class="modal-popup" style="margin-top: -116px; margin-left: -200px; left: 50%; width: 400px; top: 50%; height: 233px;">' +
+            '<div class="modal-popup-title">' +
+                'New Judge' +
+            '</div>' +
+            '<div class="stack-view">' +
+                '<div id="new-judge-name" class="modal-popup-input-item non-last">' +
+                    '<input id="input-judge-name" type="text" class="text-input" placeholder="Judge Name">' +
+                '</div>' +
+                '<div id="judge-title-cell" class="modal-popup-input-item non-last">' +
+                    '<input id="input-judge-title" type="text" class="text-input" placeholder="Judge Title">' +
+                '</div>' +
+                '<div style="position:absolute;left: 0px;right: 0px;height: 52px;bottom: 0px;">' +
+	                '<div id="confirm-cancel-button" class="content button" style="position: absolute;left: 8px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;">' +
+                    	'Cancel' +
+                    '</div>' +
+                    '<div id="confirm-add-button" class="content button" style="position: absolute;right: 4px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;font-weight:500;">' +
+                    	'Add' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+    
+    $('body').append(content);
+    $('#confirm-cancel-button').click(function(){
+	    $('#add-judge-overlay').remove();
+    });
+    $('#confirm-add-button').click(function(){
+	    if (!self.unassignedRoomId) {
+		    alert('An error occurred. Cannot add judge right now. Please try again later.');
+		    $('#add-judge-overlay').remove();
+		    return;
+	    }
+	    
+	    var judgeName = $('#input-judge-name').val();
+        var judgeTitle = $('#input-judge-title').val();
+        
+        if (!judgeName) {
+	        alert('Judge name needed.');
+            return;
+        }
+        
+        if (!judgeTitle) {
+	        alert('Judge title needed.');
+            return;
+        }
+        
+        var targetRoomId = self.unassignedRoomId;
+        
+        if (room_id) {
+	        targetRoomId = room_id;
+        }
+        
+        var newJudge = {
+	        name: judgeName,
+	        subtitle: judgeTitle,
+	        room_id: targetRoomId
+        };
+        
+        self.addItems(undefined, undefined, [newJudge], (error, data) => {
+	        if (!error && data.status === 0) {
+		        self._loadJudges(false, () => {
+			        if (callback) {
+				    	$('#add-judge-overlay').remove();
+				    	callback();
+			        } else {
+				        $('#add-judge-overlay').remove();
+		    	        self.displayJudges();
+			        }
+		        });
+	        }
+        });
+    });
+}
+
 Core.prototype.displayJudges = function() {
     var self = this;
     
@@ -421,17 +745,32 @@ Core.prototype.displayJudges = function() {
     $('#sidebar-judges').addClass('highlighted');
     
     $('#primary-content').html(self._basicJudgesContent());
+    
+    if (self.selectedJudge) {
+	    self.lastSelectedJudgeId = self.selectedJudge.id;
+	    if (!self.judges_map[self.lastSelectedJudgeId]) {
+		    self.lastSelectedJudgeId = undefined;
+	    }
+    }
+    
     self.selectedJudge = undefined;
     
     $('#judge-generate-infocard').click(function() {
         alert('Judge ID:' + self.selectedJudge.id);
     });
     
+    $('#judge-add-button').click(function() {
+	    self.displayAddJudgeView();
+    });
+    
     for(var index in self.judges) {
         var judge = self.judges[index];
         var cellId = 'judge-' + index;
         
-        var roomTitle = self.rooms_map[judge.room_id].name_abv;
+        var roomTitle = "Unassigned";
+        if (self.rooms_map[judge.room_id]) {
+	        roomTitle = self.rooms_map[judge.room_id].name_abv;
+        }
         
         var cellContent = self._generateJudgeCell(cellId, judge.name, roomTitle);
         $('#section-table').append(cellContent);
@@ -448,6 +787,10 @@ Core.prototype.displayJudges = function() {
         });
         
         if (!self.selectedJudge) {
+	        if (self.lastSelectedJudgeId && judge.id != self.lastSelectedJudgeId) {
+		        continue;
+	        }
+	        
             self.didSelectJudge(judge);
             
             $(".sec-table-cell").each(function() {
@@ -487,14 +830,84 @@ Core.prototype._generateJudgeRoomCell = function(roomName, roomSessions) {
     return cellContent;
 }
 
+Core.prototype.displayJudgeUpdateRoomView = function() {
+	var self = this;
+	
+	var content = '<div id="update-judge-room-overlay" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;">' +
+        '<div class="modal-popup" style="margin-top: -81px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 162px;">' +
+            '<div class="modal-popup-title">' +
+                'Update Room' +
+            '</div>' +
+            '<div class="stack-view">' +
+                '<div id="room-selection" class="modal-popup-selector non-last">' +
+                    '<select id="judge-update-room-select">';
+                    	for (var index in self.rooms) {
+	                    	var room = self.rooms[index];
+	                    	content += '<option value="'+room.room_id+'">'+ room.name +'</option>';
+                    	}
+        content += '</select>' +
+                '</div>' +
+                '<div style="position:absolute;left: 0px;right: 0px;height: 52px;bottom: 0px;">' +
+	                '<div id="confirm-cancel-button" class="content button" style="position: absolute;left: 8px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;">' +
+                    	'Cancel' +
+                    '</div>' +
+                    '<div id="confirm-update-button" class="content button" style="position: absolute;right: 8px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;font-weight:500;">' +
+                    	'Update' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+    
+    $('body').append(content);
+    
+    $('#judge-update-room-select').val(self.selectedJudge.room_id);
+    
+    $('#confirm-cancel-button').click(function(){
+	    $('#update-judge-room-overlay').remove();
+    });
+    
+    $('#confirm-update-button').click(function(){
+	    var selectedRoomId = $('#judge-update-room-select').val();
+	    
+	    if (!selectedRoomId || selectedRoomId == self.unassignedRoomId) {
+		    alert('You need to select a room for the judge.');
+		    return;
+	    }
+	    
+	    self.requestServerJudgeUpdate(self.selectedJudge.id, 'room_id', selectedRoomId, (error,data) => {
+		    if (!error && data.status == 0) {
+			    self._loadRooms(false);
+			    self._loadProjects(false);
+			    self._loadOverview(false);
+			    self._loadJudges(false, () => {
+				    self.displayJudges();
+    			    $('#update-judge-room-overlay').remove();
+			    });
+		    }
+	    });
+    })
+}
+
 Core.prototype._updateJudgeRoom = function() {
     var self = this;
     $('#content-room').html('');
     
     var room = self.rooms_map[self.selectedJudge.room_id];
+    if (room) {
+	    var title = room.name;
+	    var subtitle = room.projects.length;
+    } else {
+	    var title = 'Unassigned';
+	    var subtitle = '0';
+    }
     
-    var cellContent = self._generateJudgeRoomCell(room.name, room.projects.length);
+    var cellContent = self._generateJudgeRoomCell(title, subtitle);
     $('#content-room').append(cellContent);
+    
+    $('#update-room').click(function() {
+	    self.displayJudgeUpdateRoomView();
+    });
 }
 
 Core.prototype._generateJudgeEvalCell = function(title, subtitle, time, evaluation) {
@@ -736,6 +1149,65 @@ Core.prototype.generateDetailReport = function() {
     }
 }
 
+Core.prototype.displayProjectUpdateRoomView = function() {
+	var self = this;
+	
+	var content = '<div id="update-project-room-overlay" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;">' +
+        '<div class="modal-popup" style="margin-top: -81px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 162px;">' +
+            '<div class="modal-popup-title">' +
+                'Update Room' +
+            '</div>' +
+            '<div class="stack-view">' +
+                '<div id="room-selection" class="modal-popup-selector non-last">' +
+                    '<select id="project-update-room-select">';
+                    	for (var index in self.rooms) {
+	                    	var room = self.rooms[index];
+	                    	content += '<option value="'+room.room_id+'">'+ room.name +'</option>';
+                    	}
+        content += '</select>' +
+                '</div>' +
+                '<div style="position:absolute;left: 0px;right: 0px;height: 52px;bottom: 0px;">' +
+	                '<div id="confirm-cancel-button" class="content button" style="position: absolute;left: 8px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;">' +
+                    	'Cancel' +
+                    '</div>' +
+                    '<div id="confirm-update-button" class="content button" style="position: absolute;right: 8px;bottom: 12px;display: flex;justify-content: center;align-items: center;width: 75px;height: 30px;font-size: 20px;font-weight:500;">' +
+                    	'Update' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+    
+    $('body').append(content);
+    
+    $('#project-update-room-select').val(self.selectedProject.room_id);
+    
+    $('#confirm-cancel-button').click(function(){
+	    $('#update-project-room-overlay').remove();
+    });
+    
+    $('#confirm-update-button').click(function(){
+	    var selectedRoomId = $('#project-update-room-select').val();
+	    
+	    if (!selectedRoomId || selectedRoomId == self.unassignedRoomId) {
+		    alert('You need to select a room for the project.');
+		    return;
+	    }
+	    
+	    self.requestServerProjectUpdate(self.selectedProject.id, 'room_id', selectedRoomId, (error,data) => {
+		    if (!error && data.status == 0) {
+			    self._loadRooms(false);
+			    self._loadOverview(false);
+			    self._loadJudges(false);
+			    self._loadProjects(false, () => {
+				    self.displayProjects();
+    			    $('#update-project-room-overlay').remove();
+			    });
+		    }
+	    });
+    })
+}
+
 Core.prototype.displayProjects = function() {
     var self = this;
     
@@ -743,6 +1215,13 @@ Core.prototype.displayProjects = function() {
     $('#sidebar-projects').addClass('highlighted');
     $('#sidebar-rooms').removeClass('highlighted');
     $('#sidebar-judges').removeClass('highlighted');
+    
+    if (self.selectedProject) {
+	    self.lastSelectedProjectId = self.selectedProject.id;
+	    if (!self.projects_map[self.lastSelectedProjectId]) {
+		    self.lastSelectedProjectId = undefined;
+	    }
+    }
     
     self.selectedProject = undefined;
     
@@ -774,6 +1253,9 @@ Core.prototype.displayProjects = function() {
         });
         
         if (!self.selectedProject) {
+	        if (self.lastSelectedProjectId && project.id != self.lastSelectedProjectId) {
+		        continue;
+	        }
             self.didSelectProject(project);
             
             $(".sec-table-cell").each(function() {
@@ -825,6 +1307,10 @@ Core.prototype._updateProjectRoom = function() {
     
     var cellContent = self._generateProjectRoomCell(room.name, time);
     $('#content-room').append(cellContent);
+    
+    $('#update-room').click(function() {
+	    self.displayProjectUpdateRoomView();
+    });
 }
 
 Core.prototype._generateProjectEvalCell = function(title, subtitle, evaluation) {
@@ -1135,118 +1621,6 @@ Core.prototype.didPressGenerateReportButton = function() {
     }
 }
 
-Core.prototype.importData = function() {
-    alert('Under construction. Coming Soon™');
-}
-
-Core.prototype.summaryReport = function() {
-    var self = this;
-    self._submitRequest('/admin/summary', (error, data) => {
-        if (!error && data.status == 0) {
-            self.generateSummaryReportWithData(data.sessions);
-        }
-    });
-}
-
-Core.prototype.detailReport = function() {
-    var self = this;
-    
-    self._submitRequest('/admin/detail?pid='+getParameterByName('pid'), (error, data) => {
-        if (!error && data.status == 0) {
-            self.generateDetailReportWithData(data);
-        }
-    });
-}
-
-Core.prototype.fetchProjects = function() {
-    var self = this;
-    
-    self._submitRequest('/admin/projects', (error, data) => {
-        if (!error && data.status == 0) {
-            self.updateProjectsList(data.projects);
-        }
-    });
-}
-
-Core.prototype.generateSummaryReportWithData = function(data) {
-    var content = '';
-    
-    for(var index in data) {
-        var session = data[index];
-        
-        var winner = 'Unknown';
-        
-        if (session.projects.length > 0) {
-            winner = session.projects[0].name;
-        }
-        
-        content += '<br><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><h2>'+session.name+'</h2><h4>Winner: '+winner+'</h4><div style="width: 75%;"><table><tr><th>Team</th><th>Score</th></tr>';
-        
-        for(var p_idx in session.projects) {
-            var project = session.projects[p_idx];
-            content += '<tr><th>'+project.name+'</th><th>'+project.score+'</th></tr>'
-        }
-          
-        content += '</table></div>';
-    }
-        
-    $('body').append(content);
-}
-
-Core.prototype.generateDetailReportWithData = function(data) {
-    var content = '';
-    
-    content += '<h2>'+data.name+'</h2>'
-    
-    for(var index in data.judges) {
-        var judge = data.judges[index];
-
-        content += '<br><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><h4>'+judge.name+'</h4><div style="width: 75%"><table><tr><th>Item</th><th>Score</th></tr>';
-        
-        var resolutions = [];
-        
-        for(var p_idx in judge.evals) {
-            var eval = judge.evals[p_idx];
-            if (eval.item_id < 13) {
-                var item = data.sections[0].items[eval.item_id - 1];
-                if (!item) {
-                    item = data.sections[1].items[eval.item_id - 9];
-                }
-                
-                content += '<tr><th>'+item.title+'</th><th>'+eval.value+'</th></tr>'
-            } else if (eval.value == 1) {
-                var item = data.sections[2].items[eval.item_id - 13];
-                resolutions.push(item.title);
-            }
-        }
-        
-        content += '</table>';
-        
-        if (resolutions.length > 0) {
-            content += '<h4>Resolutions:</h4><span>'+resolutions.join(', ')+'</span>';
-        }
-        
-        if (judge.comment) {
-            content += '<h4>Comment:</h4><span>'+judge.comment+'</span>';
-        }
-        content += '</div>';
-    }
-    
-    content += '<div style="height: 40px;"></div>'
-    
-    $('body').append(content);
-}
-
-Core.prototype.updateProjectsList = function(data) {
-    var content = '';
-    
-    for(var index in data) {
-        var project = data[index];
-        content += '<a href="detail.html?pid='+project.id+'">'+project.name+'</a><br>';
-    }
-    $('body').append(content);
-}
-
 Core.prototype._submitRequest = function(endpoint, data, callback) {
     var self = this;
     
@@ -1290,10 +1664,10 @@ Core.prototype.showSignIn = function() {
                 'Sign In' +
             '</div>' +
             '<div class="stack-view">' +
-                '<div id="sign-in-username" class="modal-popup-input-item non-last">' +
+                '<div id="sign-in-username" class="modal-popup-input-item non-click non-last">' +
                     '<input id="username" type="text" class="judge-signin-input" placeholder="Username">' +
                 '</div>' +
-                '<div id="sign-in-password" class="modal-popup-input-item">' +
+                '<div id="sign-in-password" class="modal-popup-input-item non-click">' +
                     '<input id="password" type="password" class="judge-signin-input" placeholder="Password">' +
                 '</div>' +
             '</div>' +

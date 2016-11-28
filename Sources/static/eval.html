@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Evaluation</title>
-<link rel="stylesheet" href="styles-eval.css">
+<link rel="stylesheet" href="styles-eval.css?2">
 </head>
 
 <body style="overflow: hidden;">
     <div id="root-nav" class="left-column lt-view not-selectable" style="left: 0px; width: 310px; top: 0px; bottom: 0px;">
         <div id="table-title" class="table-navi lt-view" style="left: 0px; right: 0px; top: 0px; height: 44px;display: flex;justify-content: center;align-items: center;">
             <div>
-                <h4>Sessions</h4>
+                <h4 style="display: table;margin: 0 auto;">Sessions</h4>
                 <div id="table-title-room" class="table-navi-subtitle">
                     {Room_Abv}
                 </div>
@@ -28,7 +28,7 @@
                 {Title}
             </div>
             <div id="sign-out" style="cursor: pointer; position: absolute; right: 8px; top: 16px;">
-                <label style="cursor: pointer; color: blue;">Sign Out</label>
+                <label style="cursor: pointer; color: #007AFF;">Sign Out</label>
             </div>
         </div>
     </div>
@@ -58,7 +58,8 @@
   crossorigin="anonymous"></script>
 
 <script src="./js.cookie.js"></script>
-<script src="./core.js?5"></script>
+<script src="./moment.min.js"></script>
+<script src="./core.js?10"></script>
 <script>
     $(document).ready(function() {
         var comm = new Core();
@@ -77,6 +78,20 @@
             }
             
             comm.authorize(judgeID);
+        });
+        
+        $('#judge_id').keypress(function (e) {
+          if (e.which == 13) {
+            var judgeID = $('#judge_id').val();
+                
+            if (!judgeID) {
+                alert('Judge ID needed.');
+                return;
+            }
+            
+            comm.authorize(judgeID);
+            return false;    //<---- Add this line
+          }
         });
     });
 </script>
