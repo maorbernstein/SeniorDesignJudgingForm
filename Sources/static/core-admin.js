@@ -716,6 +716,9 @@ Core.prototype._basicJudgesContent = function() {
             '<div id="judge-delete-button" class="content button" style="position: absolute; top: 3px; left: 20px;">' +
                 'Delete' +
             '</div>' +
+            '<div id="judge-generate-infocards" class="content button" style="position: absolute; top: 3px; right: 20px;">' +
+                'Generate Information Cards' +
+            '</div>' +
             '<div class="section content-view" style="left: 1px; top:55px; bottom: 0px; right: 0px; overflow-y: auto;">' +
                 '<div id="main-title" class="content title">' +
                     '<span></span>' +
@@ -879,6 +882,25 @@ Core.prototype.displayJudges = function() {
 			    }
 		    });
 	    }
+    });
+    
+    $('#judge-generate-infocards').click(function() {
+	    var judgesInfo = 'name,judge_id,room\n';
+	    
+	    for (var index in self.judges) {
+		    var judge = self.judges[index];
+		    judgesInfo += judge.name + ',' + judge.id + ',';
+		    var room = self.rooms_map[judge.room_id];
+		    if (room) {
+			    judgesInfo += room.name + '\n';
+		    } else {
+			    judgesInfo += 'Unassigned' + '\n';
+		    }
+	    }
+	    
+	    var filename = 'judges_info.csv';
+	    var blob = new Blob([judgesInfo], {type: "text/plain;charset=utf-8"});
+	    saveAs(blob, filename);
     });
         
     for(var index in self.judges) {
