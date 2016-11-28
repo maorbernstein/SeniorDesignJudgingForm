@@ -1,4 +1,0 @@
-FILENAME:installation_instructions.txt
-TITLE:Installation Instructions for Judge Eval System
-AUTHORS:Maor Bernstein,Tian Zhang, and Wilson Burchenal
-To install the JudgeEval system on an SCU Apache Website, simply copy judgeEval.tar.gz and install.sh into the directory that is assigned to your website (e.g. for Maor Bernstein this would be /webpages/mbernste/), and simply run install.sh on the destination server. Once this is complete, delete the install.sh file, and the website is working.
