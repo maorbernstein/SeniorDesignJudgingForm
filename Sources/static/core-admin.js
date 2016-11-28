@@ -1751,12 +1751,6 @@ Core.prototype.displayOverview = function() {
         $('#content-overview').append(cellContent);
         
         $('#' + cellId).click(function() {
-            /*
-var projectIndex = $(this).closest('div').attr('id').substring(8);
-            var selectedProject = self.projects[projectIndex];
-            self.didSelectProject(selectedProject);
-*/
-            
             $(".sec-table-cell").each(function() {
                 $(this).removeClass('highlighted');
             });
@@ -2061,6 +2055,9 @@ Core.prototype.signOut = function() {
     Cookies.remove('token');
     location.reload();
 }
+
+// From Ben Nadel
+// https://www.bennadel.com/blog/1504-ask-ben-parsing-csv-strings-with-javascript-exec-regular-expression-command.htm
 
 function CSVToArray( strData, strDelimiter ){
 	// Check to see if the delimiter is defined. If not,
