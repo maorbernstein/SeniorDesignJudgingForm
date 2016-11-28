@@ -4,8 +4,8 @@
 #include "filelock.hpp"
 #include "utils.hpp"
 using namespace std;
-const char* Admin::filename = "/home/mbernste/JudgeEval/Config/admin.txt";
-const char* Admin::lockname = "/home/mbernste/JudgeEval/Config/admin.lock";
+const char* Admin::filename = "Config/admin.txt";
+const char* Admin::lockname = "Config/admin.lock";
 
 void Admin::store() {
   ofstream file(filename);

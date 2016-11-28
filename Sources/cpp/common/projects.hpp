@@ -37,6 +37,7 @@ public:
   Projects();
   iterator begin() const {return data.cbegin();}
   iterator end() const {return data.cend();}
+  bool remove(std::string projectId);
   bool find(std::string projectId, Project& project);
   bool update(std::string projectId, const rapidjson::Value& change);
   void addProject(const rapidjson::Value& newProject);

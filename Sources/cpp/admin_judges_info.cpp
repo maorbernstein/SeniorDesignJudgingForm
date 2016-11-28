@@ -26,10 +26,7 @@ int main(){
   Rooms rooms;
   Value judges_json(kArrayType);
   for(Judges::iterator judge = judges.begin(); judge != judges.end(); judge++) {
-    Value judge_json(kObjectType);
-    judge_json.AddMember("id", Value(judge->getId().c_str(), out.GetAllocator()), out.GetAllocator());
-    judge_json.AddMember("name", Value(judge->getFullName().c_str(), out.GetAllocator()), out.GetAllocator());
-    judge_json.AddMember("room_id", Value(judge->getRoomId().c_str(), out.GetAllocator()), out.GetAllocator());
+    Value judge_json = judge->json(out);
     Room room;
     if(!rooms.find(judge->getRoomId(), room)){
       out.AddMember("status", -2, out.GetAllocator());

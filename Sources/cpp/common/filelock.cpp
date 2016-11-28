@@ -8,6 +8,7 @@
 using namespace std;
 FileReadLock::FileReadLock(const char* lockname){
   fd = open(lockname, O_RDWR);
+  chmod(lockname, S_IRUSR | S_IWUSR);
   flock(fd, LOCK_SH);
 }
 
@@ -18,6 +19,7 @@ FileReadLock::~FileReadLock(){
 
 FileWriteLock::FileWriteLock(const char* lockname){
   fd = open(lockname, O_CREAT|O_WRONLY|O_TRUNC);
+  chmod(lockname, S_IRUSR | S_IWUSR);
   flock(fd, LOCK_EX);
 }
 

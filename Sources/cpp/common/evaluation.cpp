@@ -3,13 +3,14 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <sys/stat.h>
 #include "filelock.hpp"
 #include "judges.hpp"
 #include "projects.hpp"
 using namespace std;
 using namespace rapidjson;
 
-const string prefix = "/home/mbernste/JudgeEval/Eval/";
+const string prefix = "Eval/";
 const char separator = ',';
 
 const char* integerFieldNames[NUM_INTEGER_FIELDS] = {
@@ -75,7 +76,9 @@ void Evaluation::store() {
 
 void Evaluation::load() {
   string s;
-  fstream file(prefix + filename + ".txt");
+  string fileFullName = prefix + filename + ".txt";
+  fstream file(fileFullName);
+  chmod(fileFullName.c_str(), S_IRUSR | S_IWUSR);
   while(file){
     string type, value;
     getline(file, s);

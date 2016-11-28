@@ -8,8 +8,8 @@
 #include "projects.hpp"
 using namespace std;
 
-const char* EvaluationStates::filename = "/home/mbernste/JudgeEval/Config/evalstates.txt";
-const char* EvaluationStates::lockname = "/home/mbernste/JudgeEval/Config/evalstates.lock";
+const char* EvaluationStates::filename = "Config/evalstates.txt";
+const char* EvaluationStates::lockname = "Config/evalstates.lock";
 const char separator = ',';
 
 istream& operator>>(istream& i, EvaluationState& evalstate){

@@ -31,6 +31,7 @@ public:
   typedef std::vector<Room>::const_iterator iterator;
   iterator begin() const {return data.cbegin();}
   iterator end() const {return data.cend();}
+  bool remove(const std::string& id);
   bool find(const std::string& id, Room& room);
   bool update(const std::string& id, const rapidjson::Value& change);
   void addRoom(const rapidjson::Value& newRoom);

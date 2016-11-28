@@ -26,8 +26,9 @@ int main(){
     out.AddMember("error", "invalid room", out.GetAllocator());
     sendResponse(out);
   } else {
-    out.AddMember("name", StringRef(judge.getFullName().c_str()), out.GetAllocator());
+    out.CopyFrom(judge.json(out), out.GetAllocator());
     out.AddMember("room", StringRef(room.getName().c_str()), out.GetAllocator());
+    out.AddMember("room_abv", StringRef(room.getAbv().c_str()), out.GetAllocator());
     Projects projects;
     EvaluationStates states;
     vector<Project> room_projects = projects.find(room);
@@ -35,6 +36,11 @@ int main(){
     for(size_t i = 0; i < room_projects.size(); i++){
       Value project = room_projects[i].json(out);
       EvalState state = states.find(judge,room_projects[i]);
+      if (state == EvalState::DONE) {
+        project.AddMember("submitted", true, out.GetAllocator());
+      } else {
+        project.AddMember("submitted", false, out.GetAllocator());
+      }
       if(state != EvalState::NOT_STARTED){
         Evaluation eval(judge, room_projects[i]);
         project.AddMember("evaluation", eval.json(out), out.GetAllocator());

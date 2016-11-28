@@ -7,8 +7,8 @@
 #include "../rapidjson/document.h"
 using namespace std;
 using namespace rapidjson;
-const char* Rooms::filename = "/home/mbernste/JudgeEval/Config/rooms.txt";
-const char* Rooms::lockname = "/home/mbernste/JudgeEval/Config/rooms.lock";
+const char* Rooms::filename = "Config/rooms.txt";
+const char* Rooms::lockname = "Config/rooms.lock";
 
 istream& operator>>(istream& i, Room& room){
   string s;
@@ -69,6 +69,19 @@ void Rooms::load() {
 Rooms::Rooms(){
   FileReadLock lock(lockname);
   load();
+}
+
+bool Rooms::remove(const std::string& roomId){
+  FileWriteLock lock(lockname);
+  load();
+  for(size_t i = 0; i < data.size(); i++){
+    if(data[i].getId() == roomId) {
+      data.erase(data.begin() + i);
+      store();
+      return true;
+    }
+  }
+  return false;
 }
 
 bool Rooms::find(const string& id, Room& room){

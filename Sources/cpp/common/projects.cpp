@@ -8,8 +8,8 @@
 using namespace std;
 using namespace rapidjson;
 
-const char* Projects::filename = "/home/mbernste/JudgeEval/Config/projects.txt";
-const char* Projects::lockname = "/home/mbernste/JudgeEval/Config/projects.lock";
+const char* Projects::filename = "Config/projects.txt";
+const char* Projects::lockname = "Config/projects.lock";
 
 Value Project::json(Document& doc) const {
   Value project(kObjectType);
@@ -104,6 +104,19 @@ bool Projects::find(std::string projectId, Project& project) {
   return false;
 }
 
+bool Projects::remove(std::string projectId) {
+  FileWriteLock lock(lockname);
+  load();
+  for(size_t i = 0; i < data.size(); i++){
+    if(data[i].getId() == projectId) {
+      data.erase(data.begin() + i);
+      store();
+      return true;
+    }
+  }
+  return false;
+}
+
 vector<Project> Projects::find(const Room& room){
   vector<Project> v;
   for(size_t i = 0; i < data.size(); i++){
@@ -177,7 +190,7 @@ void Projects::addProject(const rapidjson::Value& newProject) {
         }
       }
       data.push_back(new_project);
-      cout << (*this) << endl;
+      // cout << (*this) << endl;
       store();
       return;
     }

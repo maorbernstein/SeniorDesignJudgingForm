@@ -9,8 +9,21 @@
 #include "../rapidjson/document.h"
 using namespace std;
 using namespace rapidjson;
-const char* Judges::filename = "/home/mbernste/JudgeEval/Config/judges.txt";
-const char* Judges::lockname = "/home/mbernste/JudgeEval/Config/judges.lock";
+const char* Judges::filename = "Config/judges.txt";
+const char* Judges::lockname = "Config/judges.lock";
+
+Value Judge::json(Document& doc) const {
+  Value project(kObjectType);
+  Value id_json(id.c_str(), doc.GetAllocator());
+  project.AddMember("id", id_json, doc.GetAllocator());
+  Value name_json(name.c_str(), doc.GetAllocator());
+  project.AddMember("name", name_json, doc.GetAllocator());
+  Value room_json(room_id.c_str(), doc.GetAllocator());
+  project.AddMember("room_id", room_json, doc.GetAllocator());
+  Value subtitle_json(subtitle.c_str(), doc.GetAllocator());
+  project.AddMember("subtitle", subtitle_json, doc.GetAllocator());
+  return project;
+}
 
 istream& operator>>(istream& i, Judge& judge){
   string s;
@@ -22,11 +35,14 @@ istream& operator>>(istream& i, Judge& judge){
   if(!getline( ss, judge.id, ',' )) {return i;}
   if(!ss) {return i;}
   if(!getline( ss, judge.room_id, ',' )) {return i;}
+  if(!ss) {return i;}
+  if(!getline( ss, judge.subtitle, ',' )) {return i;}
   return i;
 }
 
 ostream& operator<<(ostream& o, const Judge& judge){
-  o << judge.name << "," << judge.id << "," << judge.room_id << endl;
+  o << judge.name << "," << judge.id << "," << judge.room_id;
+  o << "," << judge.subtitle << endl;
   return o;
 }
 
@@ -82,6 +98,19 @@ vector<Judge> Judges::find(const Room& room) {
   return assignedJudges;
 }
 
+bool Judges::remove(const string& judgeId) {
+  FileWriteLock lock(lockname);
+  load();
+  for(size_t i = 0; i < data.size(); i++){
+    if(data[i].getId() == judgeId) {
+      data.erase(data.begin() + i);
+      store();
+      return true;
+    }
+  }
+  return false;
+}
+
 bool Judges::find(const string& id, Judge& judge){
   vector<Judge>::iterator it;
   for(it = data.begin(); it != data.end(); it++){
@@ -104,6 +133,10 @@ bool Judges::update(const string& id, const Value &changeObject) {
         return true;
       } else if(changeObject.HasMember("room_id")) {
         it->room_id = changeObject["room_id"].GetString();
+        store();
+        return true;
+      } else if(changeObject.HasMember("subtitle")) {
+        it->room_id = changeObject["subtitle"].GetString();
         store();
         return true;
       } else {
@@ -135,6 +168,8 @@ void Judges::addJudge(const rapidjson::Value& newJudge) {
           new_judge.name = it->value.GetString();
         } else if (name == "room_id"){
           new_judge.room_id = it->value.GetString();
+        } else if (name == "subtitle"){
+          new_judge.subtitle = it->value.GetString();
         }
       }
       data.push_back(new_judge);

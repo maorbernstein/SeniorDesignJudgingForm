@@ -1,7 +1,7 @@
 function Core() {
     var self = this;
-    
-    self.baseURL = 'http://students.engr.scu.edu/~mbernste/cgi-bin';
+    self.baseURL = 'cgi-bin/'
+//    self.baseURL = 'http://students.engr.scu.edu/~mbernste/cgi-bin';
 }
 
 Core.prototype.initialize = function() {
@@ -18,13 +18,13 @@ Core.prototype.initialize = function() {
 Core.prototype.authorize = function(judgeID) {
     judgeID = judgeID.toUpperCase();
     var self = this;
-    
+
     var data = {
         id: judgeID
     };
     var dataPayload = JSON.stringify(data);
     var fullURL = self.baseURL + '/judge_auth.cgi';
-    
+
     $.ajax({
       url: fullURL,
       type: 'POST',
@@ -49,13 +49,13 @@ Core.prototype.authorize = function(judgeID) {
 
 Core.prototype.loadInfo = function() {
     var self = this;
-    
+
     self._submitRequest('/judge_info.cgi', (error, data) => {
         if (!error && data.name != undefined) {
             $('#judge-name').html(data.name);
             $('#judge-subtitle').html(data.subtitle);
             $('#table-title-room').html(data.room_abv);
-            
+
             self.teams = data.projects;
             self.sections = [{
             	"name": "DESIGN PROJECT",
@@ -150,13 +150,13 @@ Core.prototype.loadInfo = function() {
             		"tag": "political"
             	}]
             }];
-            
+
             for(var index in self.teams) {
                 var team = self.teams[index];
-                
+
                 var projectTime = moment.unix(team.time);
                 team.time = projectTime.format('h:mma');
-                
+
                 var cellId = 'navi-cell-' + index;
                 var cellContent = self.generateCell(cellId, team.name, team.members, team.description, team.time);
                 $('#team-table-view').append(cellContent);
@@ -164,7 +164,7 @@ Core.prototype.loadInfo = function() {
                     var teamId = $(this).closest('div').attr('id').substring(10);
                     var selectedTeam = self.teams[teamId];
                     self.didSelectTeam(selectedTeam);
-                    
+
                     var id = $(this).closest('div').attr('id');
                     $(".table-cell").each(function() {
                         $(this).css({'background-color':'white'});
@@ -174,7 +174,7 @@ Core.prototype.loadInfo = function() {
                 if (!self.currentTeam) {
                     self.currentTeam = team;
                     self.didSelectTeam(team);
-                    
+
                     $(".table-cell").each(function() {
                         $(this).css({'background-color':'white'});
                     });
@@ -189,10 +189,10 @@ Core.prototype.loadInfo = function() {
 
 Core.prototype.updateEval = function(key, value, callback) {
     var self = this;
-    
+
     var updatedEval = {};
     updatedEval[key] = value;
-    
+
     if (self.currentTeam) {
         if (self.currentTeam.evaluation) {
             self.currentTeam.evaluation[key] = value;
@@ -200,12 +200,12 @@ Core.prototype.updateEval = function(key, value, callback) {
             self.currentTeam.evaluation = updatedEval;
         }
     }
-    
+
     var evaluations = {
         id: self.currentTeam.id,
         change: updatedEval
     };
-    
+
     self._submitRequest('/judge_update.cgi', evaluations, (error, data) => {
         callback(error);
     });
@@ -213,11 +213,11 @@ Core.prototype.updateEval = function(key, value, callback) {
 
 Core.prototype.submitEval = function() {
     var self = this;
-    
+
     var evaluations = {
         id: self.currentTeam.id,
     };
-    
+
     self._submitRequest('/judge_submit.cgi', evaluations, (error, data) => {
         if(!error) {
             self.currentTeam.submitted = true;
@@ -235,30 +235,30 @@ Core.prototype.submitEval = function() {
 
 Core.prototype._submitRequest = function(endpoint, data, callback) {
     var self = this;
-    
+
     if (!callback) {
         callback = data;
         data = undefined;
     }
-    
+
     var fullURL = self.baseURL + endpoint;
-    
+
     var request = {
         url: fullURL,
         headers: {
             AUTHENTICATION: self.judgeId
         }
     }
-    
+
     if (data) {
         request.type = 'POST';
         request.data = JSON.stringify(data);
     } else {
         request.type = 'GET';
     }
-    
+
     request.dataType = 'json';
-    
+
     $.ajax(request).done((data, status) => {
         callback(undefined, data);
     }).fail((resp) => {
@@ -279,8 +279,8 @@ Core.prototype.showSignIn = function() {
             '</div>' +
         '</div>' +
     '</div>';
-    
-    
+
+
     $('body').append(content);
 }
 
@@ -291,7 +291,7 @@ Core.prototype.generateCell = function(cellId, teamName, members, shortDesc, tim
 
 Core.prototype.generateRadioSection = function(sectionId, data) {
     var sectionContent = '<div id="section-'+sectionId+'" class="lt-view" style="top: '+sectionId*20+'px;"><div class="lt-view" style="left: 10px">'+data.name+'</div><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><div class="lt-view" style="margin-left: 35px;">';
-    
+
     for(var index in data.items) {
         var item = data.items[index];
         sectionContent += '<div style="padding: 16px 0px; overflow:hidden;line-height: 40px;"><div style="float:left;">'+item.title+'</div><div class="radio" style="float:right; position: relative;width: auto;right: 40px;">' +
@@ -324,55 +324,55 @@ Core.prototype.generateRadioSection = function(sectionId, data) {
             sectionContent += '<div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div>';
         }
     }
-    
+
     sectionContent += '</div><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div></div>';
-    
+
     return sectionContent;
 }
 
 Core.prototype.generateCheckboxSection = function(sectionId, data) {
     var sectionContent = '<div id="section-'+sectionId+'" class="lt-view" style="top: '+sectionId*20+'px;"><div class="lt-view" style="left: 10px">'+data.name+'</div><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><div class="lt-view" style="padding: 8px 0px; left: 35px; right:0px;"><span>Please select each of the following considerations that were addressed by the presentation.</span><div class="checkbox"><table style="width:100%">';
-                
+
     for(var index in data.items) {
 	    if(index % 4 == 0) {
 		    sectionContent += '<tr>';
 	    }
         var item = data.items[index];
         sectionContent += '<td style="height: 60px;"><label class="check inline"><input type="checkbox" name="'+ item.tag +'" id="'+item.tag+'" value="'+item.id+'"><span>'+item.title+'</span></label></td>';
-        
+
         if(index % 4 == 3) {
 		    sectionContent += '</tr>';
 	    }
     }
-    
+
     sectionContent += '</table></div></div><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div></div>';
-    
+
     return sectionContent;
 }
 
 Core.prototype.generateCommentSection = function(sectionId) {
     var self = this;
-    
+
     var sectionContent = '<div id="section-'+sectionId+'" class="lt-view" style="top: '+ 20*sectionId +'px;"><div class="lt-view" style="left: 10px">COMMENT</div><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><div class="lt-view" style="margin-left: 10px; margin-right: 10px;"><textarea id="comment" name="comment" class="comment-textarea" placeholder="Your comment (Optional)"></textarea></div><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div></div>';
-    
+
     return sectionContent;
 }
 
 Core.prototype.generateSaveButton = function(sectionId) {
     var sectionContent = '<div id="section-'+sectionId+'" class="lt-view" style="top: '+ 20*sectionId +'px; padding-bottom: 8px;"><input id="eval-save" type="submit" value="Save Evaluation" style="margin-left: 10px;"></div>';
-    
+
     return sectionContent;
 }
 
 Core.prototype.generateSubmitButton = function(sectionId) {
     var sectionContent = '<div id="section-'+sectionId+'" class="lt-view" style="top: '+ 20*sectionId +'px; padding-bottom: 40px;"><input id="eval-submit" type="submit" value="Submit Evaluation" style="margin-left: 10px;"></div>';
-    
+
     return sectionContent;
 }
 
 Core.prototype.updateEvaluatedItems = function() {
     var self = this;
-    
+
     if (self.currentTeam && self.currentTeam.submitted) {
         $('#section-5').remove();
         $('input[type=radio]').prop('disabled', true);
@@ -381,12 +381,12 @@ Core.prototype.updateEvaluatedItems = function() {
         $('#eval-submit').prop('disabled', true);
         $('#eval-submit').prop('value', 'This evaluation is already submitted.');
     }
-    
+
     if (self.currentTeam && self.currentTeam.evaluation) {
         var evals = self.currentTeam.evaluation;
         for (var key in evals) {
             var value = evals[key];
-            
+
             if (key == 'comment') {
                 $('textarea#comment').val(value);
             } else if ($('input:radio[name='+key+'-rating]').length > 0) {
@@ -396,14 +396,14 @@ Core.prototype.updateEvaluatedItems = function() {
             }
         }
     }
-    
+
     $('#eval-save').prop('value', 'Saved');
     $('#eval-save').prop('disabled', true);
 }
 
 Core.prototype.updateEvalSection = function() {
     var self = this;
-    
+
     var htmlBody = '';
     htmlBody += self.generateRadioSection(1, self.sections[0]);
     htmlBody += self.generateRadioSection(2, self.sections[1]);
@@ -411,45 +411,45 @@ Core.prototype.updateEvalSection = function() {
     htmlBody += self.generateCommentSection(4);
     htmlBody += self.generateSaveButton(5);
     htmlBody += self.generateSubmitButton(6);
-    
+
     $('#eval-table').html(htmlBody);
     self.updateEvaluatedItems();
-    
+
     $('#eval-submit').click(function() {
         var r = confirm("Do you want to submit this evaluation? Once submitted, you will no longer be able to modify it.");
         if (r) {
             self.submitEval();
         }
     });
-    
+
     $('#eval-save').click(function() {
         var key = 'comment';
         var value = $('textarea#comment').val();
-        
+
         self.updateEval(key, value, (error) => {
             $('#eval-save').prop('value', 'Saved');
             $('#eval-save').prop('disabled', true);
         });
     })
-    
+
     $('input[type=radio]').change(function() {
         var key = this.name.replace('-rating','');
         var value = parseInt(this.value);
-        
+
         self.updateEval(key, value, (error) => {
-            
+
         });
     });
-    
+
     $('input[type=checkbox]').change(function() {
         var key = this.name;
         var value = this.checked;
-        
+
         self.updateEval(key, value, (error) => {
-            
+
         });
     });
-    
+
     $('textarea#comment').keyup(function(){
         $('#eval-save').prop('value', 'Save Evaluation');
         $('#eval-save').prop('disabled', false);
@@ -458,12 +458,12 @@ Core.prototype.updateEvalSection = function() {
 
 Core.prototype.didSelectTeam = function(team) {
     var self = this;
-    
+
     self.currentTeam = team;
     $('#team-info-name').html(team.name);
     $('#team-info-members').html(team.members);
     $('#team-info-desc').html(team.description);
-    
+
     self.updateEvalSection();
 }
 

@@ -1,7 +1,7 @@
 function Core() {
     var self = this;
-    
-    self.baseURL = 'http://students.engr.scu.edu/~mbernste/cgi-bin';
+    self.baseURL = 'cgi-bin/'
+//    self.baseURL = 'http://students.engr.scu.edu/~mbernste/cgi-bin';
 }
 
 Core.prototype.initialize = function() {
@@ -13,11 +13,11 @@ Core.prototype.initialize = function() {
     } else {
         self.showSignIn();
     }
-    
+
     $('#import-data').click(function(){
         self.importData();
     });
-        
+
     $('#sign-out').click(function(){
         self.signOut();
     });
@@ -26,14 +26,14 @@ Core.prototype.initialize = function() {
 Core.prototype.authorize = function(username, password) {
     username = username.toLowerCase();
     var self = this;
-    
+
     var data = {
         username: username,
         password: password
     };
     var dataPayload = JSON.stringify(data);
     var fullURL = self.baseURL + '/admin_auth.cgi';
-    
+
     $.ajax({
       url: fullURL,
       type: 'POST',
@@ -63,22 +63,22 @@ Core.prototype._loadJudges = function(initial, callback) {
             self.judges = data.judges.sort((a, b) => {
                 var keyA = a.name,
                     keyB = b.name;
-                
+
                 if (keyA < keyB) return -1;
                 if (keyA > keyB) return 1;
                 return 0;
             });
-            
+
             self.judges_map = {};
             for (var index in self.judges) {
                 var judge = self.judges[index];
                 self.judges_map[judge.id] = judge;
             }
-            
+
             if (initial) {
 	            self.updateUI();
             }
-            
+
             if (callback) {
 	            callback();
             }
@@ -90,12 +90,12 @@ Core.prototype._loadJudges = function(initial, callback) {
 
 Core.prototype._addUnassignedRoom = function() {
 	var self = this;
-	
+
 	var room = {
 		name: '###Core Unassigned Room',
 		name_abv: '###CUR'
 	}
-	
+
 	self.addItems(undefined, [room], undefined, () => {
 		self._loadRooms(false);
 	});
@@ -103,40 +103,40 @@ Core.prototype._addUnassignedRoom = function() {
 
 Core.prototype._loadRooms = function(initial, callback) {
 	var self = this;
-	
+
 	self._submitRequest('/admin_rooms_info.cgi', (error, data) => {
         if (!error && data.rooms != undefined) {
             self.rooms = data.rooms.sort((a, b) => {
                 var keyA = a.name,
                     keyB = b.name;
-                
+
                 if (keyA < keyB) return -1;
                 if (keyA > keyB) return 1;
                 return 0;
             });
-            
+
             var unassignedRoomIndex = undefined;
-            
+
             self.rooms_map = {};
             for (var index in self.rooms) {
                 var room = self.rooms[index];
-                
+
                 if (room.name == '###Core Unassigned Room') {
 	                unassignedRoomIndex = index;
 	                self.unassignedRoomId = room.room_id;
-	                
+
 	                continue;
                 }
-                
+
                 self.rooms_map[room.room_id] = room;
             }
-            
+
             self.rooms.splice(unassignedRoomIndex, 1);
-            
+
             if (initial) {
 	            self.updateUI();
             }
-            
+
             if (callback) {
 	            callback();
             }
@@ -148,38 +148,38 @@ Core.prototype._loadRooms = function(initial, callback) {
 
 Core.prototype._loadProjects = function(initial, callback) {
 	var self = this;
-	
+
 	self._submitRequest('/admin_projects_info.cgi', (error, data) => {
         if (!error && data.projects != undefined) {
             self.projects = data.projects.sort((a, b) => {
                 var keyA = a.name,
                     keyB = b.name;
-                
+
                 if (keyA < keyB) return -1;
                 if (keyA > keyB) return 1;
                 return 0;
             });
-            
+
             self.projects_map = {};
             for (var index in self.projects) {
                 var project = self.projects[index];
                 self.projects_map[project.id] = project;
-                
+
                 var evals = {};
                 for (var e_index in project.evaluations) {
                     var evaluation = project.evaluations[e_index];
                     evals[evaluation.judge_id] = evaluation;
                 }
-                
+
                 project.evaluations = evals;
                 var projectTime = moment.unix(project.time);
                 project.time = projectTime.format('h:mma');
             }
-            
+
             if (initial) {
 	            self.updateUI();
             }
-            
+
             if (callback) {
 	            callback();
             }
@@ -191,36 +191,36 @@ Core.prototype._loadProjects = function(initial, callback) {
 
 Core.prototype._loadOverview = function(initial, callback) {
 	var self = this;
-	
+
     self._submitRequest('/admin_overview.cgi', (error, data) => {
         if (!error && data.rooms != undefined) {
             self.overview = data.rooms.sort((a, b) => {
                 var keyA = a.name,
                     keyB = b.name;
-                
+
                 if (keyA < keyB) return -1;
                 if (keyA > keyB) return 1;
                 return 0;
             });
-            
+
             var unassignedRoomIndex = undefined;
-            
+
             for (var index in self.overview) {
                 var room = self.overview[index];
-                
+
                 if (room.name == '###Core Unassigned Room') {
-	                unassignedRoomIndex = index;	                
+	                unassignedRoomIndex = index;
 	                break;
                 }
                 self.rooms_map[room.room_id] = room;
             }
-            
+
             self.overview.splice(unassignedRoomIndex, 1);
-            
+
             if (initial) {
 	            self.updateUI();
             }
-            
+
             if (callback) {
 	            callback();
             }
@@ -232,7 +232,7 @@ Core.prototype._loadOverview = function(initial, callback) {
 
 Core.prototype.loadInfo = function() {
     var self = this;
-    
+
     self._loadOverview(true);
     self._loadProjects(true);
     self._loadRooms(true);
@@ -241,25 +241,25 @@ Core.prototype.loadInfo = function() {
 
 Core.prototype.addItems = function(projects, rooms, judges, callback) {
 	var self = this;
-	
+
 	if (!projects) {
 		projects = [];
 	}
-	
+
 	if (!rooms) {
 		rooms = [];
 	}
-	
+
 	if (!judges) {
 		judges = [];
 	}
-	
+
 	var request = {
 		projects: projects,
 		judges: judges,
 		rooms: rooms
 	};
-	
+
 	self._submitRequest('/admin_create.cgi', request, (error, data) => {
         if (callback) {
 	        if (error) {
@@ -273,15 +273,15 @@ Core.prototype.addItems = function(projects, rooms, judges, callback) {
 
 Core.prototype.requestServerProjectUpdate = function(id, key, value, callback) {
 	var self = this;
-	
+
 	var changes = {};
 	changes[key] = value;
-	
+
 	var request = {
 		id: id,
 		change: changes
 	};
-	
+
 	self._submitRequest('/admin_projects_update.cgi', request, (error, data) => {
         if (callback) {
 	        if (error) {
@@ -295,15 +295,15 @@ Core.prototype.requestServerProjectUpdate = function(id, key, value, callback) {
 
 Core.prototype.requestServerJudgeUpdate = function(id, key, value, callback) {
 	var self = this;
-	
+
 	var changes = {};
 	changes[key] = value;
-	
+
 	var request = {
 		id: id,
 		change: changes
 	};
-	
+
 	self._submitRequest('/admin_judges_update.cgi', request, (error, data) => {
         if (callback) {
 	        if (error) {
@@ -317,15 +317,15 @@ Core.prototype.requestServerJudgeUpdate = function(id, key, value, callback) {
 
 Core.prototype.updateUI = function() {
     var self = this;
-    
+
     if (!self.overview || !self.projects || !self.rooms || !self.judges) {
         return;
     }
-    
+
     if (!self.unassignedRoomId) {
 	    self._addUnassignedRoom();
     }
-    
+
     self.displayOverview();
 }
 
@@ -386,13 +386,13 @@ Core.prototype._basicRoomsContent = function() {
                 '</div>' +
             '</div>' +
         '</div>';
-    
+
     return viewContent;
 }
 
 Core.prototype.displayAddRoomView = function() {
 	var self = this;
-	
+
 	var content = '<div id="add-room-overlay" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;">' +
         '<div class="modal-popup" style="margin-top: -116px; margin-left: -200px; left: 50%; width: 400px; top: 50%; height: 233px;">' +
             '<div class="modal-popup-title">' +
@@ -416,7 +416,7 @@ Core.prototype.displayAddRoomView = function() {
             '</div>' +
         '</div>' +
     '</div>';
-    
+
     $('body').append(content);
     $('#confirm-cancel-button').click(function(){
 	    $('#add-room-overlay').remove();
@@ -424,22 +424,22 @@ Core.prototype.displayAddRoomView = function() {
     $('#confirm-add-button').click(function(){
 	    var roomName = $('#input-room-name').val();
         var roomAbv = $('#input-room-abv').val();
-        
+
         if (!roomName) {
 	        alert('Room name needed.');
             return;
         }
-        
+
         if (!roomAbv) {
 	        alert('Room abbreviation needed.');
             return;
         }
-        
+
         var newRoom = {
 	        name: roomName,
 	        name_abv: roomAbv
         };
-        
+
         self.addItems(undefined, [newRoom], undefined, (error, data) => {
 	        if (!error && data.status === 0) {
 		        self._loadRooms(false, () => {
@@ -453,18 +453,18 @@ Core.prototype.displayAddRoomView = function() {
 
 Core.prototype.displayRooms = function() {
     var self = this;
-    
+
     $('#sidebar-overview').removeClass('highlighted');
     $('#sidebar-projects').removeClass('highlighted');
     $('#sidebar-rooms').addClass('highlighted');
     $('#sidebar-judges').removeClass('highlighted');
-    
+
     $('#primary-content').html(self._basicRoomsContent());
-    
+
     $('#room-add-button').click(function() {
 	    self.displayAddRoomView();
     });
-    
+
     $('#add-judge').click(function() {
 	    var roomId = self.selectedRoom.room_id;
 	    self.displayAddJudgeView(roomId, () => {
@@ -476,43 +476,43 @@ Core.prototype.displayRooms = function() {
 		    });
 	    });
     })
-    
+
     if (self.selectedRoom) {
 	    self.lastSelectedRoomId = self.selectedRoom.room_id;
 	    if (!self.rooms_map[self.lastSelectedRoomId]) {
 		    self.lastSelectedRoomId = undefined;
 	    }
     }
-    
+
     self.selectedRoom = undefined;
-    
+
     for(var index in self.rooms) {
         var room = self.rooms[index];
         var cellId = 'room-' + index;
-        
+
         var roomSubtitle = room.projects.length + ' Projects, ' + room.judges.length + ' Judges';
-        
+
         var cellContent = self._generateRoomCell(cellId, room.name, roomSubtitle);
         $('#section-table').append(cellContent);
-        
+
         $('#' + cellId).click(function() {
             var roomIndex = $(this).closest('div').attr('id').substring(5);
             var selectedRoom = self.rooms[roomIndex];
             self.didSelectRoom(selectedRoom);
-            
+
             $(".sec-table-cell").each(function() {
                 $(this).removeClass('highlighted');
             });
             $(this).closest('div').addClass('highlighted');
         });
-        
+
         if (!self.selectedRoom) {
 	        if (self.lastSelectedRoomId && room.room_id != self.lastSelectedRoomId) {
 		        continue;
 	        }
-	        
+
             self.didSelectRoom(room);
-            
+
             $(".sec-table-cell").each(function() {
                 $(this).removeClass('highlighted');
             });
@@ -539,14 +539,14 @@ Core.prototype._generateRoomProjectCell = function(teamName, teamMembers, teamTi
 Core.prototype._updateRoomProjects = function() {
     var self = this;
     $('#content-projects').html('');
-    
+
     for(var index in self.selectedRoom.projects) {
         var projectId = self.selectedRoom.projects[index];
         var project = self.projects_map[projectId];
         if (!project) {
             continue;
         }
-        
+
         var cellContent = self._generateRoomProjectCell(project.name, project.members, project.time);
         $('#content-projects').append(cellContent);
     }
@@ -567,14 +567,14 @@ Core.prototype._generateRoomJudgeCell = function(judgeName, judgeStatus) {
 Core.prototype._updateRoomJudges = function() {
     var self = this;
     $('#content-judges').html('');
-    
+
     for(var index in self.selectedRoom.judges) {
         var judgeId = self.selectedRoom.judges[index];
         var judge = self.judges_map[judgeId];
         if (!judge) {
             continue;
         }
-        
+
         var cellContent = self._generateRoomJudgeCell(judge.name, 'Judge');
         $('#content-judges').append(cellContent);
     }
@@ -585,11 +585,11 @@ Core.prototype.didSelectRoom = function(room) {
     if (!room) {
         return;
     }
-    
+
     self.selectedRoom = room;
     $('#main-title span').html(room.name);
     $('#main-subtitle span').html(room.name_abv);
-    
+
     self._updateRoomProjects();
     self._updateRoomJudges();
 }
@@ -637,7 +637,7 @@ Core.prototype._basicJudgesContent = function() {
                 '</div>' +
             '</div>' +
         '</div>';
-    
+
     return viewContent;
 }
 
@@ -655,11 +655,11 @@ Core.prototype._generateJudgeCell = function(cellId, judgeName, subtitle) {
 
 Core.prototype.displayAddJudgeView = function(room_id, callback) {
 	var self = this;
-	
+
 	if (!self.unassignedRoomId) {
 		self._addUnassignedRoom();
 	}
-	
+
 	var content = '<div id="add-judge-overlay" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;">' +
         '<div class="modal-popup" style="margin-top: -116px; margin-left: -200px; left: 50%; width: 400px; top: 50%; height: 233px;">' +
             '<div class="modal-popup-title">' +
@@ -683,7 +683,7 @@ Core.prototype.displayAddJudgeView = function(room_id, callback) {
             '</div>' +
         '</div>' +
     '</div>';
-    
+
     $('body').append(content);
     $('#confirm-cancel-button').click(function(){
 	    $('#add-judge-overlay').remove();
@@ -694,32 +694,32 @@ Core.prototype.displayAddJudgeView = function(room_id, callback) {
 		    $('#add-judge-overlay').remove();
 		    return;
 	    }
-	    
+
 	    var judgeName = $('#input-judge-name').val();
         var judgeTitle = $('#input-judge-title').val();
-        
+
         if (!judgeName) {
 	        alert('Judge name needed.');
             return;
         }
-        
+
         if (!judgeTitle) {
 	        alert('Judge title needed.');
             return;
         }
-        
+
         var targetRoomId = self.unassignedRoomId;
-        
+
         if (room_id) {
 	        targetRoomId = room_id;
         }
-        
+
         var newJudge = {
 	        name: judgeName,
 	        subtitle: judgeTitle,
 	        room_id: targetRoomId
         };
-        
+
         self.addItems(undefined, undefined, [newJudge], (error, data) => {
 	        if (!error && data.status === 0) {
 		        self._loadJudges(false, () => {
@@ -738,61 +738,61 @@ Core.prototype.displayAddJudgeView = function(room_id, callback) {
 
 Core.prototype.displayJudges = function() {
     var self = this;
-    
+
     $('#sidebar-overview').removeClass('highlighted');
     $('#sidebar-projects').removeClass('highlighted');
     $('#sidebar-rooms').removeClass('highlighted');
     $('#sidebar-judges').addClass('highlighted');
-    
+
     $('#primary-content').html(self._basicJudgesContent());
-    
+
     if (self.selectedJudge) {
 	    self.lastSelectedJudgeId = self.selectedJudge.id;
 	    if (!self.judges_map[self.lastSelectedJudgeId]) {
 		    self.lastSelectedJudgeId = undefined;
 	    }
     }
-    
+
     self.selectedJudge = undefined;
-    
+
     $('#judge-generate-infocard').click(function() {
         alert('Judge ID:' + self.selectedJudge.id);
     });
-    
+
     $('#judge-add-button').click(function() {
 	    self.displayAddJudgeView();
     });
-    
+
     for(var index in self.judges) {
         var judge = self.judges[index];
         var cellId = 'judge-' + index;
-        
+
         var roomTitle = "Unassigned";
         if (self.rooms_map[judge.room_id]) {
 	        roomTitle = self.rooms_map[judge.room_id].name_abv;
         }
-        
+
         var cellContent = self._generateJudgeCell(cellId, judge.name, roomTitle);
         $('#section-table').append(cellContent);
-        
+
         $('#' + cellId).click(function() {
             var judgeIndex = $(this).closest('div').attr('id').substring(6);
             var selectedJudge = self.judges[judgeIndex];
             self.didSelectJudge(selectedJudge);
-            
+
             $(".sec-table-cell").each(function() {
                 $(this).removeClass('highlighted');
             });
             $(this).closest('div').addClass('highlighted');
         });
-        
+
         if (!self.selectedJudge) {
 	        if (self.lastSelectedJudgeId && judge.id != self.lastSelectedJudgeId) {
 		        continue;
 	        }
-	        
+
             self.didSelectJudge(judge);
-            
+
             $(".sec-table-cell").each(function() {
                 $(this).removeClass('highlighted');
             });
@@ -806,11 +806,11 @@ Core.prototype.didSelectJudge = function(judge) {
     if (!judge) {
         return;
     }
-    
+
     self.selectedJudge = judge;
     $('#main-title span').html(judge.name);
     $('#main-subtitle span').html(judge.subtitle);
-    
+
     self._updateJudgeRoom();
     self._updateJudgeEvaluations();
 }
@@ -832,7 +832,7 @@ Core.prototype._generateJudgeRoomCell = function(roomName, roomSessions) {
 
 Core.prototype.displayJudgeUpdateRoomView = function() {
 	var self = this;
-	
+
 	var content = '<div id="update-judge-room-overlay" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;">' +
         '<div class="modal-popup" style="margin-top: -81px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 162px;">' +
             '<div class="modal-popup-title">' +
@@ -858,23 +858,23 @@ Core.prototype.displayJudgeUpdateRoomView = function() {
             '</div>' +
         '</div>' +
     '</div>';
-    
+
     $('body').append(content);
-    
+
     $('#judge-update-room-select').val(self.selectedJudge.room_id);
-    
+
     $('#confirm-cancel-button').click(function(){
 	    $('#update-judge-room-overlay').remove();
     });
-    
+
     $('#confirm-update-button').click(function(){
 	    var selectedRoomId = $('#judge-update-room-select').val();
-	    
+
 	    if (!selectedRoomId || selectedRoomId == self.unassignedRoomId) {
 		    alert('You need to select a room for the judge.');
 		    return;
 	    }
-	    
+
 	    self.requestServerJudgeUpdate(self.selectedJudge.id, 'room_id', selectedRoomId, (error,data) => {
 		    if (!error && data.status == 0) {
 			    self._loadRooms(false);
@@ -892,7 +892,7 @@ Core.prototype.displayJudgeUpdateRoomView = function() {
 Core.prototype._updateJudgeRoom = function() {
     var self = this;
     $('#content-room').html('');
-    
+
     var room = self.rooms_map[self.selectedJudge.room_id];
     if (room) {
 	    var title = room.name;
@@ -901,10 +901,10 @@ Core.prototype._updateJudgeRoom = function() {
 	    var title = 'Unassigned';
 	    var subtitle = '0';
     }
-    
+
     var cellContent = self._generateJudgeRoomCell(title, subtitle);
     $('#content-room').append(cellContent);
-    
+
     $('#update-room').click(function() {
 	    self.displayJudgeUpdateRoomView();
     });
@@ -944,14 +944,14 @@ Core.prototype._generateJudgeEvalCell = function(title, subtitle, time, evaluati
 Core.prototype._updateJudgeEvaluations = function() {
     var self = this;
     $('#content-evaluations').html('');
-    
+
     for(var index in self.selectedJudge.projects) {
         var projectId = self.selectedJudge.projects[index];
         var project = self.projects_map[projectId];
         if (!project) {
             continue;
         }
-        
+
         var cellContent = self._generateJudgeEvalCell(project.name, project.members, project.time, project.evaluations[self.selectedJudge.id]);
         $('#content-evaluations').append(cellContent);
     }
@@ -1009,7 +1009,7 @@ Core.prototype._basicProjectContent = function() {
                 '</div>' +
             '</div>' +
         '</div>';
-    
+
     return viewContent;
 }
 
@@ -1030,20 +1030,20 @@ Core.prototype._generateProjectCell = function(cellId, projectName, subtitle, ex
 
 Core.prototype._generateDetailReportContent = function(data) {
     var self = this;
-    
+
     var content = '<h1>Detail Report</h1>';
-    
+
     content += '<h2>'+data.name+'</h2>'
-    
+
     for(var index in data.evaluations) {
         var evaluation = data.evaluations[index];
         var judge = self.judges_map[evaluation.judge_id];
 
         content += '<br><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><h4>'+judge.name+'</h4><div style="width: 75%"><table><tr><th>Item</th><th>Score</th></tr>';
-        
+
         var resolutions = [];
         var comment = undefined;
-        
+
         var numKeys = {
             'tech': 'Technical Accuracy',
             'creativity': 'Creativity and Innovation',
@@ -1058,7 +1058,7 @@ Core.prototype._generateDetailReportContent = function(data) {
             'visual_aids': 'Visual Aids',
             'poise': 'Confidence and Poise'
         };
-        
+
         var resKeys = {
             'economic': 'Economic',
             'environmental': 'Environmental',
@@ -1069,7 +1069,7 @@ Core.prototype._generateDetailReportContent = function(data) {
             'social': 'Social',
             'political': 'Political'
         };
-        
+
         for (var key in evaluation.evaluation) {
             if (key == 'comment') {
                 comment = evaluation.evaluation[key];
@@ -1079,7 +1079,7 @@ Core.prototype._generateDetailReportContent = function(data) {
                 if (value == -1) {
                     value = 'N/A';
                 }
-                
+
                 content += '<tr><th>'+title+'</th><th>'+value+'</th></tr>'
             } else if (resKeys[key]) {
                 var title = resKeys[key];
@@ -1089,34 +1089,34 @@ Core.prototype._generateDetailReportContent = function(data) {
                 }
             }
         }
-                
+
         content += '</table>';
-        
+
         if (resolutions.length > 0) {
             content += '<h4>Considerations:</h4><span>'+resolutions.join(', ')+'</span>';
         }
-        
+
         if (comment) {
             content += '<h4>Comment:</h4><span>'+comment+'</span>';
         }
         content += '</div>';
     }
-    
+
     content += '<div style="height: 40px;"></div>'
-    
+
     return content;
 }
 
 Core.prototype.generateDetailReport = function() {
     var self = this;
-    
+
     var allSubmitted = true;
-    
+
     var project = self.selectedProject;
     if (!project) {
         return;
     }
-    
+
     for (var key in project) {
         var evaluation = project[key];
         if (evaluation.status != 'done') {
@@ -1124,21 +1124,21 @@ Core.prototype.generateDetailReport = function() {
             break;
         }
     }
-    
+
     if (!allSubmitted) {
         $('body').append(self._generateReportPartialContent());
-    
+
         $('#generate-confirm').click(function() {
             $('#report-type-overlay').remove();
             var w = window.open("");
             $(w.document.head).append(self._generateReportStyle());
             $(w.document.body).html(self._generateDetailReportContent(project));
         });
-        
+
         $('#generate-deny').click(function() {
             $('#report-type-overlay').remove();
         });
-        
+
         $('#report-type-overlay').click(function() {
             $('#report-type-overlay').remove();
         })
@@ -1151,7 +1151,7 @@ Core.prototype.generateDetailReport = function() {
 
 Core.prototype.displayProjectUpdateRoomView = function() {
 	var self = this;
-	
+
 	var content = '<div id="update-project-room-overlay" class="overlay" style="left: 0px; right: 0px; top: 0px; bottom: 0px;">' +
         '<div class="modal-popup" style="margin-top: -81px; margin-left: -145px; left: 50%; width: 290px; top: 50%; height: 162px;">' +
             '<div class="modal-popup-title">' +
@@ -1177,23 +1177,23 @@ Core.prototype.displayProjectUpdateRoomView = function() {
             '</div>' +
         '</div>' +
     '</div>';
-    
+
     $('body').append(content);
-    
+
     $('#project-update-room-select').val(self.selectedProject.room_id);
-    
+
     $('#confirm-cancel-button').click(function(){
 	    $('#update-project-room-overlay').remove();
     });
-    
+
     $('#confirm-update-button').click(function(){
 	    var selectedRoomId = $('#project-update-room-select').val();
-	    
+
 	    if (!selectedRoomId || selectedRoomId == self.unassignedRoomId) {
 		    alert('You need to select a room for the project.');
 		    return;
 	    }
-	    
+
 	    self.requestServerProjectUpdate(self.selectedProject.id, 'room_id', selectedRoomId, (error,data) => {
 		    if (!error && data.status == 0) {
 			    self._loadRooms(false);
@@ -1210,54 +1210,54 @@ Core.prototype.displayProjectUpdateRoomView = function() {
 
 Core.prototype.displayProjects = function() {
     var self = this;
-    
+
     $('#sidebar-overview').removeClass('highlighted');
     $('#sidebar-projects').addClass('highlighted');
     $('#sidebar-rooms').removeClass('highlighted');
     $('#sidebar-judges').removeClass('highlighted');
-    
+
     if (self.selectedProject) {
 	    self.lastSelectedProjectId = self.selectedProject.id;
 	    if (!self.projects_map[self.lastSelectedProjectId]) {
 		    self.lastSelectedProjectId = undefined;
 	    }
     }
-    
+
     self.selectedProject = undefined;
-    
+
     $('#primary-content').html(self._basicProjectContent());
     $('#project-generate-report').click(function() {
         self.generateDetailReport();
     });
-    
+
     for(var index in self.projects) {
         var project = self.projects[index];
         var cellId = 'project-' + index;
-        
+
         var room = self.rooms_map[project.room_id];
         var projectSub = room.name_abv + ' | ' + project.time;
         var projectExtra = Object.keys(project.evaluations).length + ' Judges';
-        
+
         var cellContent = self._generateProjectCell(cellId, project.name, projectSub, projectExtra);
         $('#section-table').append(cellContent);
-        
+
         $('#' + cellId).click(function() {
             var projectIndex = $(this).closest('div').attr('id').substring(8);
             var selectedProject = self.projects[projectIndex];
             self.didSelectProject(selectedProject);
-            
+
             $(".sec-table-cell").each(function() {
                 $(this).removeClass('highlighted');
             });
             $(this).closest('div').addClass('highlighted');
         });
-        
+
         if (!self.selectedProject) {
 	        if (self.lastSelectedProjectId && project.id != self.lastSelectedProjectId) {
 		        continue;
 	        }
             self.didSelectProject(project);
-            
+
             $(".sec-table-cell").each(function() {
                 $(this).removeClass('highlighted');
             });
@@ -1276,9 +1276,9 @@ Core.prototype._generateProjectDescCell = function(projectDesc) {
 Core.prototype._updateProjectDescription = function() {
     var self = this;
     $('#content-desc').html('');
-    
+
     var projectDesc = self.selectedProject.description;
-    
+
     var cellContent = self._generateProjectDescCell(projectDesc);
     $('#content-desc').append(cellContent);
 }
@@ -1301,13 +1301,13 @@ Core.prototype._generateProjectRoomCell = function(roomName, time) {
 Core.prototype._updateProjectRoom = function() {
     var self = this;
     $('#content-room').html('');
-    
+
     var room = self.rooms_map[self.selectedProject.room_id];
     var time = self.selectedProject.time;
-    
+
     var cellContent = self._generateProjectRoomCell(room.name, time);
     $('#content-room').append(cellContent);
-    
+
     $('#update-room').click(function() {
 	    self.displayProjectUpdateRoomView();
     });
@@ -1344,15 +1344,15 @@ Core.prototype._generateProjectEvalCell = function(title, subtitle, evaluation) 
 Core.prototype._updateProjectEvals = function() {
     var self = this;
     $('#content-evaluations').html('');
-    
+
     for(var key in self.selectedProject.evaluations) {
         var judge = self.judges_map[key];
         var evaluation = self.selectedProject.evaluations[key];
-        
+
         if (!evaluation || !judge) {
             continue;
         }
-        
+
         var cellContent = self._generateProjectEvalCell(judge.name, judge.subtitle, evaluation);
         $('#content-evaluations').append(cellContent);
     }
@@ -1363,18 +1363,18 @@ Core.prototype.didSelectProject = function(project) {
     if (!project) {
         return;
     }
-    
+
     self.selectedProject = project;
     $('#main-title span').html(project.name);
     $('#main-subtitle span').html(project.members);
-    
+
     self._updateProjectDescription();
     self._updateProjectRoom();
     self._updateProjectEvals();
 }
 
 Core.prototype._basicOverviewContent = function() {
-    var viewContent = 
+    var viewContent =
         '<div id="content" class="content-container" style="left: 230px; right: 0px; top: 0px; bottom: 0px; overflow: hidden;">' +
             '<div class="content header">' +
             '</div>' +
@@ -1396,7 +1396,7 @@ Core.prototype._basicOverviewContent = function() {
                 '</div>' +
             '</div>' +
         '</div>';
-    
+
     return viewContent;
 }
 
@@ -1435,32 +1435,32 @@ Core.prototype._generateOverviewCell = function(cellId, title, projects) {
 
 Core.prototype.displayOverview = function() {
     var self = this;
-    
+
     $('#sidebar-overview').addClass('highlighted');
     $('#sidebar-projects').removeClass('highlighted');
     $('#sidebar-rooms').removeClass('highlighted');
     $('#sidebar-judges').removeClass('highlighted');
-    
+
     $('#primary-content').html(self._basicOverviewContent());
-    
+
     $('#generate-report').click(function(){
         self.didPressGenerateReportButton();
     });
-    
+
     for(var index in self.overview) {
         var room = self.overview[index];
         var cellId = 'overview-' + index;
-                
+
         var cellContent = self._generateOverviewCell(cellId, room.name, room.projects);
         $('#content-overview').append(cellContent);
-        
+
         $('#' + cellId).click(function() {
             /*
 var projectIndex = $(this).closest('div').attr('id').substring(8);
             var selectedProject = self.projects[projectIndex];
             self.didSelectProject(selectedProject);
 */
-            
+
             $(".sec-table-cell").each(function() {
                 $(this).removeClass('highlighted');
             });
@@ -1485,12 +1485,12 @@ Core.prototype._generateReportPartialContent = function() {
             '</div>' +
         '</div>' +
     '</div>';
-    
+
     return content;
 }
 
 Core.prototype._generateReportStyle = function() {
-    var content = 
+    var content =
     '<style>' +
         'body {' +
             'font-family: arial, sans-serif;' +
@@ -1513,75 +1513,75 @@ Core.prototype._generateReportStyle = function() {
             'position: absolute;' +
         '}' +
     '</style>';
-    
+
     return content;
 }
 
 Core.prototype._generateSummaryReport = function() {
     var self = this;
-    
-    var content = 
+
+    var content =
     '<h1>Summary Report</h1>';
-    
+
     for(var index in self.overview) {
         var room = self.overview[index];
-        
+
         var winner = 'Unknown';
         var projects = room.projects.sort((a, b) => {
             var fullProjectA = self.projects_map[a.id];
             var totalScoreA = 0;
-            
+
             for(var e_idx in fullProjectA.evaluations) {
                 var evaluation = fullProjectA.evaluations[e_idx];
                 totalScoreA += evaluation.score;
             }
-            
+
             var fullProjectB = self.projects_map[b.id];
             var totalScoreB = 0;
-            
+
             for(var e_idx in fullProjectB.evaluations) {
                 var evaluation = fullProjectB.evaluations[e_idx];
                 totalScoreB += evaluation.score;
             }
-            
+
             var keyA = totalScoreA,
                 keyB = totalScoreB;
-            
+
             if (keyA < keyB) return 1;
             if (keyA > keyB) return -1;
             return 0;
         });
-        
+
         if (projects.length > 0) {
             winner = projects[0].name;
         }
-        
+
         content += '<br><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><h2>'+room.name+'</h2><h4>Winner: '+winner+'</h4><div style="width: 75%;"><table><tr><th>Team</th><th>Score (Avg)</th><th>Score (Total)</th></tr>';
-        
+
         for(var p_idx in projects) {
             var project = projects[p_idx];
             var fullProject = self.projects_map[project.id];
             var totalScore = 0;
-            
+
             for(var e_idx in fullProject.evaluations) {
                 var evaluation = fullProject.evaluations[e_idx];
                 totalScore += evaluation.score;
             }
-            
+
             content += '<tr><th>'+project.name+'</th><th>'+project.score+'</th><th>'+totalScore+'</th></tr>'
         }
-          
+
         content += '</table></div>';
     }
-    
+
     return content;
 }
 
 Core.prototype.didPressGenerateReportButton = function() {
     var self = this;
-    
+
     var allSubmitted = true;
-    
+
     for (var r_index in self.overview) {
         var room = self.overview[r_index];
         for (var p_index in room.projects) {
@@ -1591,26 +1591,26 @@ Core.prototype.didPressGenerateReportButton = function() {
                 break;
             }
         }
-        
+
         if (!allSubmitted) {
             break;
         }
     }
-    
+
     if (!allSubmitted) {
         $('body').append(self._generateReportPartialContent());
-    
+
         $('#generate-confirm').click(function() {
             $('#report-type-overlay').remove();
             var w = window.open("");
             $(w.document.head).append(self._generateReportStyle());
             $(w.document.body).html(self._generateSummaryReport());
         });
-        
+
         $('#generate-deny').click(function() {
             $('#report-type-overlay').remove();
         });
-        
+
         $('#report-type-overlay').click(function() {
             $('#report-type-overlay').remove();
         })
@@ -1623,30 +1623,30 @@ Core.prototype.didPressGenerateReportButton = function() {
 
 Core.prototype._submitRequest = function(endpoint, data, callback) {
     var self = this;
-    
+
     if (!callback) {
         callback = data;
         data = undefined;
     }
-    
+
     var fullURL = self.baseURL + endpoint;
-    
+
     var request = {
         url: fullURL,
         headers: {
             AUTHENTICATION: self.token
         }
     }
-    
+
     if (data) {
         request.type = 'POST';
         request.data = JSON.stringify(data);
     } else {
         request.type = 'GET';
     }
-    
+
     request.dataType = 'json';
-    
+
     $.ajax(request).done((data, status) => {
         callback(undefined, data);
     }).fail((resp) => {
