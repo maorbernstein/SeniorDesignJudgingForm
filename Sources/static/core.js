@@ -424,7 +424,7 @@ Core.prototype.updateEvalSection = function() {
     
     $('#eval-save').click(function() {
         var key = 'comment';
-        var value = $('textarea#comment').val();
+        var value = encodeHTML($('textarea#comment').val());
         
         self.updateEval(key, value, (error) => {
             $('#eval-save').prop('value', 'Saved');
