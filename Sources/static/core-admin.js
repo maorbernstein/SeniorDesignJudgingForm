@@ -599,7 +599,7 @@ Core.prototype.displayRooms = function() {
         
         var roomSubtitle = room.projects.length + ' Projects, ' + room.judges.length + ' Judges';
         
-        var cellContent = self._generateRoomCell(cellId, room.name, roomSubtitle);
+        var cellContent = self._generateRoomCell(cellId, encodeHTML(room.name), roomSubtitle);
         $('#section-table').append(cellContent);
         
         $('#' + cellId).click(function() {
@@ -654,7 +654,7 @@ Core.prototype._updateRoomProjects = function() {
             continue;
         }
         
-        var cellContent = self._generateRoomProjectCell(project.name, project.members, project.time);
+        var cellContent = self._generateRoomProjectCell(encodeHTML(project.name), encodeHTML(project.members), project.time);
         $('#content-projects').append(cellContent);
     }
 }
@@ -682,7 +682,7 @@ Core.prototype._updateRoomJudges = function() {
             continue;
         }
         
-        var cellContent = self._generateRoomJudgeCell(judge.name, 'Judge');
+        var cellContent = self._generateRoomJudgeCell(encodeHTML(judge.name), 'Judge');
         $('#content-judges').append(cellContent);
     }
 }
@@ -694,8 +694,8 @@ Core.prototype.didSelectRoom = function(room) {
     }
     
     self.selectedRoom = room;
-    $('#main-title span').html(room.name);
-    $('#main-subtitle span').html(room.name_abv);
+    $('#main-title span').text(room.name);
+    $('#main-subtitle span').text(room.name_abv);
     
     self._updateRoomProjects();
     self._updateRoomJudges();
@@ -947,8 +947,8 @@ Core.prototype.didSelectJudge = function(judge) {
     }
     
     self.selectedJudge = judge;
-    $('#main-title span').html(judge.name);
-    $('#main-subtitle span').html(judge.subtitle + ' | ' + judge.id);
+    $('#main-title span').text(judge.name);
+    $('#main-subtitle span').text(judge.subtitle + ' | ' + judge.id);
     
     self._updateJudgeRoom();
     self._updateJudgeEvaluations();
@@ -1240,7 +1240,7 @@ Core.prototype._generateDetailReportContent = function(data) {
         }
         
         if (comment) {
-            content += '<h4>Comment:</h4><span>'+comment+'</span>';
+            content += '<h4>Comment:</h4><span>'+encodeHTML(comment)+'</span>';
         }
         content += '</div>';
     }
@@ -1306,7 +1306,7 @@ Core.prototype.displayProjectUpdateRoomView = function() {
                     '<select id="project-update-room-select">';
                     	for (var index in self.rooms) {
 	                    	var room = self.rooms[index];
-	                    	content += '<option value="'+room.room_id+'">'+ room.name +'</option>';
+	                    	content += '<option value="'+room.room_id+'">'+ encodeHTML(room.name) +'</option>';
                     	}
         content += '</select>' +
                 '</div>' +
@@ -1527,11 +1527,11 @@ Core.prototype.displayProjects = function() {
         var projectExtra = '0 Judges';
         
         if (room) {
-	        projectSub = room.name_abv + ' | ' + project.time;
+	        projectSub = encodeHTML(room.name_abv + ' | ' + project.time);
 	        projectExtra = Object.keys(project.evaluations).length + ' Judges';
         }
         
-        var cellContent = self._generateProjectCell(cellId, project.name, projectSub, projectExtra);
+        var cellContent = self._generateProjectCell(cellId, encodeHTML(project.name), encodeHTML(projectSub), encodeHTML(projectExtra));
         $('#section-table').append(cellContent);
         
         $('#' + cellId).click(function() {
@@ -1599,7 +1599,7 @@ Core.prototype._updateProjectRoom = function() {
     
     var title = 'Unassigned';
     if (room) {
-	    title = room.name;
+	    title = encodeHTML(room.name);
     }
     
     var time = self.selectedProject.time;
@@ -1652,7 +1652,7 @@ Core.prototype._updateProjectEvals = function() {
             continue;
         }
         
-        var cellContent = self._generateProjectEvalCell(judge.name, judge.subtitle, evaluation);
+        var cellContent = self._generateProjectEvalCell(encodeHTML(judge.name), encodeHTML(judge.subtitle), evaluation);
         $('#content-evaluations').append(cellContent);
     }
 }
@@ -1664,8 +1664,8 @@ Core.prototype.didSelectProject = function(project) {
     }
     
     self.selectedProject = project;
-    $('#main-title span').html(project.name);
-    $('#main-subtitle span').html(project.members);
+    $('#main-title span').text(project.name);
+    $('#main-subtitle span').text(project.members);
     
     self._updateProjectDescription();
     self._updateProjectRoom();
@@ -1750,7 +1750,7 @@ Core.prototype.displayOverview = function() {
         var room = self.overview[index];
         var cellId = 'overview-' + index;
                 
-        var cellContent = self._generateOverviewCell(cellId, room.name, room.projects);
+        var cellContent = self._generateOverviewCell(cellId, encodeHTML(room.name), room.projects);
         $('#content-overview').append(cellContent);
         
         $('#' + cellId).click(function() {
@@ -1866,10 +1866,10 @@ Core.prototype._generateSummaryReport = function() {
         });
         
         if (projects.length > 0) {
-            winner = projects[0].name;
+            winner = encodeHTML(projects[0].name);
         }
         
-        content += '<br><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><h2>'+room.name+'</h2><h4>Winner: '+winner+'</h4><div style="width: 75%;"><table><tr><th>Team</th><th>Score (Avg)</th><th>Score (Total)</th></tr>';
+        content += '<br><div id="sep-1" class="separator lt-view" style="left: 0px; right: 0px; height: 1px;"></div><h2>'+encodeHTML(room.name)+'</h2><h4>Winner: '+winner+'</h4><div style="width: 75%;"><table><tr><th>Team</th><th>Score (Avg)</th><th>Score (Total)</th></tr>';
         
         for(var p_idx in projects) {
             var project = projects[p_idx];
@@ -1881,7 +1881,7 @@ Core.prototype._generateSummaryReport = function() {
                 totalScore += evaluation.score;
             }
             
-            content += '<tr><th>'+project.name+'</th><th>'+project.score+'</th><th>'+totalScore+'</th></tr>'
+            content += '<tr><th>'+encodeHTML(project.name)+'</th><th>'+project.score+'</th><th>'+totalScore+'</th></tr>'
         }
           
         content += '</table></div>';
@@ -2191,6 +2191,26 @@ Core.prototype.resetPassword = function() {
 		        '</div>';
 			    
 			    $('#sign-in').append(content);
+			    
+			    $('#password').keypress(function (e) {
+			      if (e.which == 13) {
+			        var username = $('#username').val();
+			        var password = $('#password').val();
+			        
+			        if (!username) {
+			            alert('username needed.');
+			            return;
+			        }
+			        
+			        if (!password) {
+			            alert('password needed.');
+			            return;
+			        }
+			        
+			        self.authorize(username, password);
+			        return false;
+			      }
+			    });
 	        } else {
 		        alert('An error occurred when updating password. Please try again later.');
 	        }
@@ -2338,4 +2358,9 @@ function CSVToArray( strData, strDelimiter ){
 
 	// Return the parsed data.
 	return( arrData );
+}
+
+// From http://stackoverflow.com/questions/2794137/sanitizing-user-input-before-adding-it-to-the-dom-in-javascript
+function encodeHTML(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 }

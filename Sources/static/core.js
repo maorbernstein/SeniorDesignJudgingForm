@@ -51,9 +51,9 @@ Core.prototype.loadInfo = function() {
     
     self._submitRequest('/judge_info.cgi', (error, data) => {
         if (!error && data.name != undefined) {
-            $('#judge-name').html(data.name);
-            $('#judge-subtitle').html(data.subtitle);
-            $('#table-title-room').html(data.room_abv);
+            $('#judge-name').text(data.name);
+            $('#judge-subtitle').text(data.subtitle);
+            $('#table-title-room').text(data.room_abv);
             
             self.teams = data.projects;
             self.sections = [{
@@ -470,4 +470,9 @@ Core.prototype.didSelectTeam = function(team) {
 Core.prototype.signOut = function() {
     Cookies.remove('judge_id');
     location.reload();
+}
+
+// From http://stackoverflow.com/questions/2794137/sanitizing-user-input-before-adding-it-to-the-dom-in-javascript
+function encodeHTML(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 }
